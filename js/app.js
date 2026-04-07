@@ -136,12 +136,12 @@ function renderProducts(filteredList = null) {
         const isSpecialOfDay = p => p.isSpecialOfDay === true;
 
         const specialItems    = allSaleProducts.filter(p => isSpecialOfDay(p)).slice(0, 4);
-        const regularItems    = allSaleProducts.filter(p => inShowcase(p) && !isSpecialOfDay(p)).slice(0, 20 - specialItems.length);
+        const regularItems    = allSaleProducts.filter(p => inShowcase(p) && !isSpecialOfDay(p)).slice(0, 30 - specialItems.length);
 
         // --- Atualizar contador no painel ---
         const counterEl = document.getElementById('showcase-counter');
         const totalFeatured = specialItems.length + regularItems.length;
-        if (counterEl) counterEl.textContent = `${totalFeatured}/20 em destaque · ⭐ ${specialItems.length}/4 destaque do dia`;
+        if (counterEl) counterEl.textContent = `${totalFeatured}/30 em destaque · ⭐ ${specialItems.length}/4 destaque do dia`;
 
         // Ocultar seções separadas (os destaques do dia ficam na grade principal)
         const specialSection = document.getElementById('special-of-day-section');
@@ -345,10 +345,10 @@ function toggleShowcase(id) {
     const currentlyIn = p.inShowcase === true || (p.inShowcase === undefined && p.hideInShowcase !== true);
 
     if (!currentlyIn) {
-        // Verificar limite de 20
+        // Verificar limite de 30
         const inShowcaseCount = products.filter(x => x.type === 'produto' && (x.inShowcase === true || (x.inShowcase === undefined && x.hideInShowcase !== true))).length;
-        if (inShowcaseCount >= 20) {
-            alert('Já existem 20 produtos em destaque. Remova um antes de adicionar outro.');
+        if (inShowcaseCount >= 30) {
+            alert('Já existem 30 produtos em destaque. Remova um antes de adicionar outro.');
             return;
         }
         p.inShowcase = true;
