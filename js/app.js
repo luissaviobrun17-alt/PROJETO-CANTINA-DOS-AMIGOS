@@ -1767,20 +1767,24 @@ document.getElementById('product-form')?.addEventListener('submit', function (e)
             btn.innerText = wasEditing ? '✅ Alterações Salvas!' : '✅ Produto Salvo!';
 
             setTimeout(() => {
+                closeProductModal();
+
                 if (!wasEditing) {
-                    // FIX: fechar modal e ir para o estoque para confirmar o cadastro
-                    closeProductModal();
-                    // Navegar para a seção estoque adequada
-                    const targetSection = window.activeInventoryType === 'insumo' ? 'inventory-insumos' : 'inventory-sales';
-                    const navItem = document.querySelector(`.nav-links li[data-section="${targetSection}"]`);
-                    if (navItem) navItem.click();
-                    else renderProducts();
-                } else {
-                    closeProductModal();
+                    // Resetar filtro de categoria para garantir que o produto apareça
+                    window.activeInventoryCategory = 'all';
+                    window.activeInventorySearch = '';
+                    const searchInput = document.getElementById('inventory-search');
+                    if (searchInput) searchInput.value = '';
+                    // Atualizar botões da barra de categoria para "Todos"
+                    document.querySelectorAll('#inventory-category-bar .category-btn, #inventory-insumo-bar .category-btn').forEach(btn => {
+                        const key = btn.dataset.invcat || btn.dataset.inscat;
+                        btn.classList.toggle('active', key === 'all');
+                    });
                 }
+
                 btn.innerText = originalText;
                 btn.style.background = '';
-                renderProducts(); // Refresh final
+                renderProducts(); // Atualiza tabela com o novo produto visível
             }, 600);
         }, 400);
 
