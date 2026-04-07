@@ -34,17 +34,40 @@ const InventoryStore = {
 
     _tryLoad() {
         // Tenta carregar do slot principal
-        if (this._loadFromKey('cantina_products')) return true;
+        if (this._loadFromKey('cantina_products')) {
+            this._migrateShowcaseFlags();
+            return true;
+        }
 
         // Fallback: tenta os backups rotativos
         const backupResult = this._loadFromBackup();
         if (backupResult) {
             console.warn('[InventoryStore] Dados recuperados do backup automático!');
-            // Re-salva no slot principal para restaurar
+            this._migrateShowcaseFlags();
             this.save(this.products);
             return true;
         }
         return false;
+    },
+
+    /**
+     * Migração: normaliza os flags de destaque para o novo sistema.
+     * Produtos sem inShowcase definido → inShowcase = true (visíveis por padrão).
+     * Produtos com hideInShowcase = true → inShowcase = false (respeita escolha antiga).
+     */
+    _migrateShowcaseFlags() {
+        let changed = false;
+        this.products.forEach(p => {
+            if (p.type === 'produto' && p.inShowcase === undefined) {
+                p.inShowcase = (p.hideInShowcase !== true); // herda decisão antiga
+                changed = true;
+            }
+        });
+        if (changed) {
+            console.log('[InventoryStore] Migração de flags de destaque aplicada.');
+            // Salva silenciosamente sem disparar o indicador de UI
+            try { localStorage.setItem('cantina_products', JSON.stringify(this.products)); } catch(e) {}
+        }
     },
 
     _loadFromKey(key) {
