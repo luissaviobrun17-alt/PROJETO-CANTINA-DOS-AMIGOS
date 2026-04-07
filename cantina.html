@@ -600,6 +600,44 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Barra de Busca + Filtros de Categoria -->
+                <div id="inventory-filter-bar" style="margin: 0.5rem 0 0.75rem 0; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div class="sales-search-box" style="flex: 1; max-width: 380px;">
+                            <i data-lucide="search" style="cursor:pointer;"></i>
+                            <input type="text" id="inventory-search" placeholder="Buscar produto no estoque..."
+                                   oninput="filterInventoryBySearch(this.value)">
+                        </div>
+                        <span id="inventory-item-count" style="font-size: 0.78rem; color: #64748b; white-space: nowrap;"></span>
+                    </div>
+
+                    <!-- Botões de categoria — visíveis somente em Produtos de Vendas -->
+                    <div id="inventory-category-bar" style="display: none;">
+                        <div class="category-buttons-grid">
+                            <button class="category-btn active" data-invcat="all" onclick="filterInventoryByCategory('all')">
+                                <span>Todos</span>
+                            </button>
+                            <button class="category-btn" data-invcat="Salgados" onclick="filterInventoryByCategory('Salgados')">
+                                <i data-lucide="sandwich"></i>
+                                <span>Salgados</span>
+                            </button>
+                            <button class="category-btn" data-invcat="Bebidas" onclick="filterInventoryByCategory('Bebidas')">
+                                <i data-lucide="coffee"></i>
+                                <span>Bebidas</span>
+                            </button>
+                            <button class="category-btn" data-invcat="Doces" onclick="filterInventoryByCategory('Doces')">
+                                <i data-lucide="candy"></i>
+                                <span>Doces</span>
+                            </button>
+                            <button class="category-btn" data-invcat="Almoço" onclick="filterInventoryByCategory('Almoço')">
+                                <i data-lucide="utensils"></i>
+                                <span>Almoço / Jantar</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="inventory-table-container glass">
                     <table class="modern-table">
                         <thead>

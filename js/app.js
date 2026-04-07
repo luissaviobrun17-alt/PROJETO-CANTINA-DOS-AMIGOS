@@ -12,6 +12,8 @@ function filterHomeProducts(query) {
 
 // --- CORE FUNCTIONALITIES (Restored & Direct Exposure) ---
 window.activeInventoryType = 'produto';
+window.activeInventoryCategory = 'all'; // subcategoria ativa no filtro de estoque
+window.activeInventorySearch = '';     // texto de busca no estoque
 var editingProductId = null;
 
 window.openProductModal = function () {
@@ -124,23 +126,58 @@ function renderProducts(filteredList = null) {
         let inventoryProducts = (filteredList || allProducts)
             .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 
-        // FIX: sempre filtrar por tipo quando tableBody existe — não depender de #inventory.active
-        // porque o modal pode estar aberto sobrepondo a secção
+        // Mostrar/ocultar barra de categorias e atualizar botões
+        const catBar = document.getElementById('inventory-category-bar');
+        if (catBar) {
+            const showCat = window.activeInventoryType === 'produto';
+            catBar.style.display = showCat ? 'block' : 'none';
+        }
+
+        // FIX: sempre filtrar por tipo quando tableBody existe
         if (!filteredList) {
             const targetType = window.activeInventoryType || 'produto';
             if (targetType !== 'all') {
                 const filtered = inventoryProducts.filter(p => p.type === targetType);
-                // Só restringe se houver resultados; senão mostra tudo para não sumir
-                if (filtered.length > 0) {
-                    inventoryProducts = filtered;
-                }
+                if (filtered.length > 0) inventoryProducts = filtered;
             }
+
+            // Filtro por subcategoria (somente para produtos de venda)
+            if (window.activeInventoryType === 'produto' && window.activeInventoryCategory && window.activeInventoryCategory !== 'all') {
+                const catFiltered = inventoryProducts.filter(p => {
+                    const pCat = (p.category || '').toLowerCase();
+                    // 'Almoço' filtra tanto 'Almoço' quanto 'Jantar' e 'Almoço / Jantar'
+                    if (window.activeInventoryCategory === 'Almoço') {
+                        return pCat.includes('almo') || pCat.includes('jantar');
+                    }
+                    return pCat === window.activeInventoryCategory.toLowerCase();
+                });
+                inventoryProducts = catFiltered; // mostra mesmo se vazio (lista em branco)
+            }
+
+            // Filtro por busca de texto
+            if (window.activeInventorySearch && window.activeInventorySearch.length > 0) {
+                const q = window.activeInventorySearch.toLowerCase();
+                inventoryProducts = inventoryProducts.filter(p =>
+                    (p.name || '').toLowerCase().includes(q) ||
+                    (p.category || '').toLowerCase().includes(q)
+                );
+            }
+        }
+
+        // Atualizar contador de itens visíveis
+        const countEl = document.getElementById('inventory-item-count');
+        if (countEl) {
+            countEl.textContent = `${inventoryProducts.length} ${inventoryProducts.length === 1 ? 'item' : 'itens'}`;
         }
 
         if (viewTitle) {
             const currentType = window.activeInventoryType || 'produto';
+            const activeCat = window.activeInventoryCategory || 'all';
+            const catLabel = (currentType === 'produto' && activeCat !== 'all')
+                ? ` — ${activeCat === 'Almoço' ? 'Almoço / Jantar' : activeCat}`
+                : '';
             viewTitle.innerText = currentType === 'all' ? 'ESTOQUE COMPLETO' :
-                currentType === 'produto' ? 'Estoque: Produtos para Vendas' :
+                currentType === 'produto' ? `Estoque: Produtos para Vendas${catLabel}` :
                     currentType === 'insumo' ? 'Estoque: Insumos (Cozinha)' : 'Estoque: Materiais Gerais';
         }
 
@@ -209,6 +246,25 @@ function renderProducts(filteredList = null) {
 
     if (window.lucide) window.lucide.createIcons();
 }
+
+/** Filtra o estoque por subcategoria de produto */
+function filterInventoryByCategory(cat) {
+    window.activeInventoryCategory = cat;
+    // Atualizar botão ativo
+    document.querySelectorAll('#inventory-category-bar .category-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.invcat === cat);
+    });
+    renderProducts();
+}
+
+/** Busca em tempo real no estoque */
+function filterInventoryBySearch(query) {
+    window.activeInventorySearch = query || '';
+    renderProducts();
+}
+
+window.filterInventoryByCategory = filterInventoryByCategory;
+window.filterInventoryBySearch = filterInventoryBySearch;
 
 
 function editProduct(id) {
@@ -1750,6 +1806,14 @@ document.querySelectorAll('.nav-links li').forEach(li => {
 
         if (sectionId.startsWith('inventory-')) {
             window.activeInventoryType = li.dataset.type;
+            // Resetar filtros ao mudar o tipo de inventário
+            window.activeInventoryCategory = 'all';
+            window.activeInventorySearch = '';
+            const searchInput = document.getElementById('inventory-search');
+            if (searchInput) searchInput.value = '';
+            document.querySelectorAll('#inventory-category-bar .category-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.invcat === 'all');
+            });
             // FIX: garantir referência global consistente
 
             const parent = li.closest('.nav-parent');
