@@ -38,8 +38,33 @@ window.openProductModal = function () {
         invBtn.querySelector('span').innerText = "Anexar Nota";
     }
     document.getElementById('p-invoice').value = '';
-    document.getElementById('p-type').value = window.activeInventoryType || 'produto';
-    updateModalFieldsByType(window.activeInventoryType || 'produto');
+
+    // Pré-selecionar Tipo com base na seção ativa (Produtos / Insumos)
+    const activeType = window.activeInventoryType || 'produto';
+    document.getElementById('p-type').value = activeType;
+    updateModalFieldsByType(activeType);
+
+    // Pré-selecionar Categoria com base no filtro ativo
+    const activeCat = window.activeInventoryCategory || 'all';
+    if (activeCat !== 'all') {
+        const categorySelect = document.getElementById('p-category');
+        if (categorySelect) {
+            // Mapeamento: filtro → valor da option no select
+            const catMap = {
+                'Salgados' : 'Salgados',
+                'Bebidas'  : 'Bebidas',
+                'Doces'    : 'Doces',
+                'Almoço'   : 'Almoço',   // Almoço/Jantar → padrão Almoço
+                'Insumos'  : 'Insumos',   // Insumos Cozinha
+                'Limpeza'  : 'Limpeza'    // Produtos de Limpeza
+            };
+            const targetCat = catMap[activeCat];
+            if (targetCat) {
+                const exists = Array.from(categorySelect.options).some(o => o.value === targetCat && o.style.display !== 'none');
+                if (exists) categorySelect.value = targetCat;
+            }
+        }
+    }
 };
 
 window.closeProductModal = function () {
