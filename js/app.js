@@ -397,6 +397,45 @@ function toggleSpecialOfDay(id) {
 window.toggleShowcase = toggleShowcase;
 window.toggleSpecialOfDay = toggleSpecialOfDay;
 
+/**
+ * "Gerenciar Destaque" — navega para o estoque de produtos onde
+ * o usuário pode usar os botões ⭐ e 🏆 de cada linha para gerenciar.
+ */
+function openShowcaseManager() {
+    navigateToInventory('produto');
+    // Mostrar dica rápida na primeira vez
+    const shown = sessionStorage.getItem('showcaseTipShown');
+    if (!shown) {
+        sessionStorage.setItem('showcaseTipShown', '1');
+        setTimeout(() => {
+            const tip = document.createElement('div');
+            tip.style.cssText = `
+                position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+                background: rgba(212,175,55,0.15); border: 1px solid rgba(212,175,55,0.5);
+                backdrop-filter: blur(12px); border-radius: 12px;
+                padding: 14px 18px; max-width: 300px; color: #f0d060;
+                font-size: 0.82rem; line-height: 1.5;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+                animation: fadeInUp 0.3s ease;
+            `;
+            tip.innerHTML = `
+                <strong>⭐ Gerenciar Destaque</strong><br>
+                Use os botões nas linhas da tabela:<br>
+                <b>⭐ Estrela</b> → adiciona ao painel (máx 30)<br>
+                <b>🏆 Troféu</b> → Destaque do Dia (máx 4)<br>
+                <button onclick="this.parentElement.remove()" style="
+                    margin-top: 8px; background: rgba(212,175,55,0.2);
+                    border: 1px solid rgba(212,175,55,0.4); color: var(--gold);
+                    border-radius: 6px; padding: 3px 10px; cursor: pointer; font-size: 0.78rem;
+                ">OK, entendi</button>
+            `;
+            document.body.appendChild(tip);
+            setTimeout(() => { if (tip.parentElement) tip.remove(); }, 6000);
+        }, 400);
+    }
+}
+window.openShowcaseManager = openShowcaseManager;
+
 
 function editProduct(id) {
     const products = window.InventoryStore.getAll();
