@@ -127,27 +127,48 @@ function renderProducts(filteredList = null) {
     const allProducts = window.InventoryStore.getAll()
         .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 
-    // 1. Vitrine do Painel (Sempre produtos para venda)
+    // 1. Vitrine do Painel (Destaques + Destaque do Dia)
     if (list) {
-        const showcaseProducts = allProducts
-            .filter(p => p.type === 'produto' && p.hideInShowcase !== true)
-            .slice(0, 20);
+        const allSaleProducts = allProducts.filter(p => p.type === 'produto');
 
-        list.innerHTML = showcaseProducts.map((p, i) => {
+        // Helper: um produto está em destaque se inShowcase=true OU (inShowcase é undefined E hideInShowcase !== true)
+        const inShowcase = p => p.inShowcase === true || (p.inShowcase === undefined && p.hideInShowcase !== true);
+        const isSpecialOfDay = p => p.isSpecialOfDay === true;
+
+        const specialItems    = allSaleProducts.filter(p => isSpecialOfDay(p)).slice(0, 4);
+        const regularItems    = allSaleProducts.filter(p => inShowcase(p) && !isSpecialOfDay(p)).slice(0, 20 - specialItems.length);
+
+        // --- Atualizar contador no painel ---
+        const counterEl = document.getElementById('showcase-counter');
+        const totalFeatured = specialItems.length + regularItems.length;
+        if (counterEl) counterEl.textContent = `${totalFeatured}/20 em destaque · ⭐ ${specialItems.length}/4 destaque do dia`;
+
+        // Ocultar seções separadas (os destaques do dia ficam na grade principal)
+        const specialSection = document.getElementById('special-of-day-section');
+        const divider        = document.getElementById('showcase-divider');
+        if (specialSection) specialSection.style.display = 'none';
+        if (divider)        divider.style.display        = 'none';
+
+        // --- Uma única grade: destaques do dia (com ênfase) PRIMEIRO, depois os regulares ---
+        const allShowcaseItems = [
+            ...specialItems.map(p => ({ ...p, _isSpecial: true })),
+            ...regularItems
+        ];
+
+        list.innerHTML = allShowcaseItems.map((p, i) => {
             const price = parseFloat(p.price) || 0;
+            const isSpecial = !!p._isSpecial;
             return `
-            <div class="product-card" onclick="openPayment(${p.id})" style="animation-delay: ${i * 0.05}s">
+            <div class="product-card${isSpecial ? ' special-of-day-card' : ''}" onclick="openPayment(${p.id})" style="animation-delay: ${i * 0.05}s">
                 <div class="product-img">
                     <img src="${p.img}" alt="${p.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/200x180?text=Produto'">
+                    ${isSpecial ? '<span class="special-day-badge">⭐ DESTAQUE DO DIA</span>' : ''}
                     ${p.stock <= p.minStock ? '<span class="stock-badge">Estoque Baixo</span>' : ''}
                     <div class="product-price-badge">R$ ${price.toFixed(2)}</div>
-                    <button class="showcase-delete-btn" onclick="event.stopPropagation(); removeFromShowcase(${p.id})" title="Remover dos Destaques">
-                        <i data-lucide="trash-2"></i>
-                    </button>
                 </div>
                 <div class="product-name-bottom">${p.name}</div>
-            </div>
-        `}).join('');
+            </div>`;
+        }).join('');
     }
 
     // 2. Tabela de Inventário (Filtrada pelo tipo ativo)
@@ -274,6 +295,17 @@ function renderProducts(filteredList = null) {
                         <button class="action-btn delete" onclick="deleteProduct(${p.id})">
                             <i data-lucide="trash-2"></i>
                         </button>
+                        ${p.type === 'produto' ? `
+                        <button class="action-btn showcase-toggle ${p.inShowcase === true || (p.inShowcase === undefined && p.hideInShowcase !== true) ? 'active-showcase' : ''}"
+                            onclick="toggleShowcase(${p.id})"
+                            title="${p.inShowcase === true || (p.inShowcase === undefined && p.hideInShowcase !== true) ? 'Remover do destaque' : 'Adicionar ao destaque (máx 20)'}">
+                            <i data-lucide="star"></i>
+                        </button>
+                        <button class="action-btn special-toggle ${p.isSpecialOfDay ? 'active-special' : ''}"
+                            onclick="toggleSpecialOfDay(${p.id})"
+                            title="${p.isSpecialOfDay ? 'Remover do Destaque do Dia' : 'Definir como Destaque do Dia (máx 3)'}">
+                            <i data-lucide="award"></i>
+                        </button>` : ''}
                     </div>
                 </td>
             </tr>
@@ -301,6 +333,69 @@ function filterInventoryBySearch(query) {
 
 window.filterInventoryByCategory = filterInventoryByCategory;
 window.filterInventoryBySearch = filterInventoryBySearch;
+
+/**
+ * Alterna se o produto aparece na vitrine do painel (máx 20 itens)
+ */
+function toggleShowcase(id) {
+    const products = window.InventoryStore.getAll();
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+
+    const currentlyIn = p.inShowcase === true || (p.inShowcase === undefined && p.hideInShowcase !== true);
+
+    if (!currentlyIn) {
+        // Verificar limite de 20
+        const inShowcaseCount = products.filter(x => x.type === 'produto' && (x.inShowcase === true || (x.inShowcase === undefined && x.hideInShowcase !== true))).length;
+        if (inShowcaseCount >= 20) {
+            alert('Já existem 20 produtos em destaque. Remova um antes de adicionar outro.');
+            return;
+        }
+        p.inShowcase = true;
+        p.hideInShowcase = false;
+    } else {
+        p.inShowcase = false;
+        p.hideInShowcase = true;
+        // Se era destaque do dia, remover também
+        if (p.isSpecialOfDay) p.isSpecialOfDay = false;
+    }
+
+    window.InventoryStore.updateProduct(id, p);
+    renderProducts();
+}
+
+/**
+ * Alterna o status de Destaque do Dia (máx 3 itens)
+ */
+function toggleSpecialOfDay(id) {
+    const products = window.InventoryStore.getAll();
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+
+    if (!p.isSpecialOfDay) {
+        // Verificar se está em destaque antes
+        const currentlyIn = p.inShowcase === true || (p.inShowcase === undefined && p.hideInShowcase !== true);
+        if (!currentlyIn) {
+            alert('Para marcar como Destaque do Dia, o produto precisa estar em destaque primeiro. Ative a ⭐ primeiro.');
+            return;
+        }
+        // Verificar limite de 4
+        const specialCount = products.filter(x => x.isSpecialOfDay === true).length;
+        if (specialCount >= 4) {
+            alert('Já existem 4 produtos como Destaque do Dia. Remova um antes de adicionar outro.');
+            return;
+        }
+        p.isSpecialOfDay = true;
+    } else {
+        p.isSpecialOfDay = false;
+    }
+
+    window.InventoryStore.updateProduct(id, p);
+    renderProducts();
+}
+
+window.toggleShowcase = toggleShowcase;
+window.toggleSpecialOfDay = toggleSpecialOfDay;
 
 
 function editProduct(id) {

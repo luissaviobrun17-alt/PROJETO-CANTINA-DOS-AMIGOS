@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --bg-dark: #022c22;
     --bg-sidebar: #064e3b;
     --gold: #d4af37;
@@ -411,6 +411,62 @@ body {
 .product-card:hover {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px var(--accent-glow);
     border-color: var(--gold);
+}
+
+/* ⭐ Cards de Destaque do Dia */
+.special-of-day-card {
+    border: 2px solid var(--gold) !important;
+    box-shadow: 0 0 18px rgba(212, 175, 55, 0.45), 0 4px 20px rgba(0,0,0,0.4);
+    animation: specialGlow 2.5s ease-in-out infinite alternate;
+    transform: scale(1.03);
+    position: relative;
+    z-index: 1;
+}
+.special-of-day-card:hover {
+    box-shadow: 0 0 30px rgba(212, 175, 55, 0.7), 0 10px 30px rgba(0,0,0,0.5);
+    transform: scale(1.06);
+}
+@keyframes specialGlow {
+    from { box-shadow: 0 0 12px rgba(212,175,55,0.35), 0 4px 20px rgba(0,0,0,0.4); }
+    to   { box-shadow: 0 0 28px rgba(212,175,55,0.65), 0 4px 20px rgba(0,0,0,0.4); }
+}
+
+/* Badge ⭐ DESTAQUE DO DIA */
+.special-day-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: linear-gradient(135deg, #d4af37, #f5c842);
+    color: #1a0a00;
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(212,175,55,0.6);
+    text-transform: uppercase;
+    white-space: nowrap;
+    z-index: 2;
+}
+
+/* Botões de toggle de destaque na tabela de estoque */
+.action-btn.showcase-toggle {
+    color: #64748b;
+    border-color: rgba(100, 116, 139, 0.3);
+}
+.action-btn.showcase-toggle.active-showcase {
+    color: var(--gold);
+    border-color: rgba(212, 175, 55, 0.6);
+    background: rgba(212, 175, 55, 0.12);
+}
+.action-btn.special-toggle {
+    color: #64748b;
+    border-color: rgba(100, 116, 139, 0.3);
+}
+.action-btn.special-toggle.active-special {
+    color: #f97316;
+    border-color: rgba(249, 115, 22, 0.6);
+    background: rgba(249, 115, 22, 0.12);
 }
 
 .product-img {
