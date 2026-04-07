@@ -1768,23 +1768,16 @@ document.getElementById('product-form')?.addEventListener('submit', function (e)
 
             setTimeout(() => {
                 closeProductModal();
-
-                if (!wasEditing) {
-                    // Resetar filtro de categoria para garantir que o produto apareça
-                    window.activeInventoryCategory = 'all';
-                    window.activeInventorySearch = '';
-                    const searchInput = document.getElementById('inventory-search');
-                    if (searchInput) searchInput.value = '';
-                    // Atualizar botões da barra de categoria para "Todos"
-                    document.querySelectorAll('#inventory-category-bar .category-btn, #inventory-insumo-bar .category-btn').forEach(btn => {
-                        const key = btn.dataset.invcat || btn.dataset.inscat;
-                        btn.classList.toggle('active', key === 'all');
-                    });
-                }
-
                 btn.innerText = originalText;
                 btn.style.background = '';
-                renderProducts(); // Atualiza tabela com o novo produto visível
+
+                if (!wasEditing) {
+                    // Navegar para o estoque correto — produto aparece garantido
+                    navigateToInventory(window.activeInventoryType);
+                } else {
+                    // Edição: apenas atualizar a tabela
+                    renderProducts();
+                }
             }, 600);
         }, 400);
 
@@ -1835,6 +1828,46 @@ function restoreAllButtons() {
     });
 }
 window.restoreAllButtons = restoreAllButtons;
+
+/**
+ * Navega para a seção de estoque correta e renderiza os produtos.
+ * Replica o mesmo comportamento do click handler de navegação.
+ */
+function navigateToInventory(type) {
+    type = type || window.activeInventoryType || 'produto';
+    const sectionId = (type === 'insumo') ? 'inventory-insumos' : 'inventory-sales';
+
+    // Definir tipo e resetar filtros
+    window.activeInventoryType = type;
+    window.activeInventoryCategory = 'all';
+    window.activeInventorySearch = '';
+    const searchInput = document.getElementById('inventory-search');
+    if (searchInput) searchInput.value = '';
+
+    // Resetar botões de categoria para "Todos"
+    document.querySelectorAll('#inventory-category-bar .category-btn, #inventory-insumo-bar .category-btn').forEach(btn => {
+        const key = btn.dataset.invcat || btn.dataset.inscat;
+        btn.classList.toggle('active', key === 'all');
+    });
+
+    // Ativar item de menu correto
+    document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
+    const navLi = document.querySelector(`.nav-links li[data-section="${sectionId}"]`);
+    if (navLi) {
+        const parent = navLi.closest('.nav-parent');
+        if (parent) parent.classList.add('active');
+        navLi.classList.add('active');
+    }
+
+    // Mostrar seção de estoque
+    document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+    const inventorySection = document.getElementById('inventory');
+    if (inventorySection) inventorySection.classList.add('active');
+
+    // Renderizar produtos
+    renderProducts();
+}
+window.navigateToInventory = navigateToInventory;
 
 document.querySelectorAll('.nav-links li').forEach(li => {
     li.addEventListener('click', (e) => {
