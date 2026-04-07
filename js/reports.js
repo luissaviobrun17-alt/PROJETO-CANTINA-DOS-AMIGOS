@@ -93,14 +93,22 @@ const ReportManager = {
         const container = document.getElementById('report-clientes-list');
         if (!container) return;
         const clients = window.CustomerStore?.getAll() || [];
-        container.innerHTML = clients.map(c => `
-            <tr>
-                <td>${c.name}</td>
-                <td>${c.phone || '-'}</td>
-                <td>${c.totalPurchases || 0}</td>
-                <td>R$ ${parseFloat(c.balance || 0).toFixed(2)}</td>
-            </tr>
-        `).join('');
+        const transactions = window.FinanceStore?.transactions || [];
+        container.innerHTML = clients.map(c => {
+            // FIX: calcular totais reais a partir das transações
+            const customerSales = transactions.filter(t =>
+                t.type === 'in' && t.metadata?.customerName === c.name
+            );
+            const totalPurchases = customerSales.length;
+            const totalAmount = customerSales.reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+            return `
+                <tr>
+                    <td>${c.name}</td>
+                    <td>${c.phone || '-'}</td>
+                    <td>${totalPurchases} pedidos</td>
+                    <td>R$ ${totalAmount.toFixed(2)}</td>
+                </tr>`;
+        }).join('');
     },
 
     openReport(type) {
@@ -260,6 +268,10 @@ function generateReport(isFullStock = false) {
 
     renderReportPages();
 }
+
+// NOTA: reports.js mantém suas próprias versões dessas funções para uso interno.
+// app.js sobrescreve os aliases window.* com versões mais completas (com edição/histórico).
+// Esta é a versão compacta usada pelo generateReport() interno.
 
 function renderReportPages() {
     const container = document.getElementById('report-pages-container') || document.getElementById('report-preview-body');
@@ -451,15 +463,7 @@ function updatePageItemQty(index, val) {
     renderReportPages();
 }
 
-function closeReportModal() {
-    const modal = document.getElementById('report-modal');
-    if (modal) {
-        modal.classList.remove('active');
-        // Restaurar o header para quando o estoque/compras for aberto novamente
-        const reportHeader = modal.querySelector('.report-header');
-        if (reportHeader) reportHeader.style.display = '';
-    }
-}
+// closeReportModal — versão canônica (com limpeza de lista) está em app.js
 
 // Global Print Engine (Iframe Isolation)
 window._originalPrint = window.print; // Salvar referencia original
@@ -706,17 +710,12 @@ function openConsumptionA4Report() {
 
 
 // --- EXPOSIÇÃO GLOBAL DIRETA ---
+// FIX: Funções de relatório interativo NÃO são exportadas aqui;
+// são exportadas por app.js (carregado depois) com versões mais completas.
 window.ReportManager = ReportManager;
 window.switchReportView = (type) => ReportManager.switchReportView(type);
 window.openA4ReportView = openA4ReportView;
-window.closeReportModal = closeReportModal;
-window.removeReportItem = removeReportItem;
-window.updatePageItemQty = updatePageItemQty;
 window.generateReport = generateReport;
-window.calculateReportTotalValue = calculateReportTotalValue;
-window.renderReportPages = renderReportPages;
-window.printReport = window.print; // Alias para compatibilidade
-window.addManualItemToReport = addManualItemToReport;
 window.renderGenericA4Report = renderGenericA4Report;
 window.openSalesA4Report = openSalesA4Report;
 window.openDeletedA4Report = openDeletedA4Report;

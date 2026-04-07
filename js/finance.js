@@ -255,7 +255,7 @@ const FinanceManager = {
                     <div style="display: flex; gap: 1rem; align-items: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">
                         <span style="color: #94a3b8; min-width: 80px;">${new Date(t.date).toLocaleDateString()}</span>
                         <span style="font-weight: 500;">${t.desc}${customer}</span>
-                        <span style="color: #64748b; font-size: 0.8rem;">(${t.method.toUpperCase()})</span>
+                        <span style="color: #64748b; font-size: 0.8rem;">(${(t.method || 'PIX').toUpperCase()})</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 1rem;">
                         <span class="t-amount ${t.type}" style="font-weight: 700; min-width: 100px; text-align: right;">R$ ${t.amount.toFixed(2)}</span>

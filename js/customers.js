@@ -60,5 +60,5 @@ const CustomerStore = {
 };
 
 window.CustomerStore = CustomerStore;
-// CustomerStore.init() movido para o bootstrap no index.html
+CustomerStore.init(); // FIX BUG 3: inicializar automaticamente como FinanceStore e AuthStore
 console.log("Módulo: customers.js carregado.");

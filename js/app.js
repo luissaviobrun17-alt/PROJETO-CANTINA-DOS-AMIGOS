@@ -77,21 +77,7 @@ function updateModalFieldsByType(type) {
     }
 }
 
-window.previewNewImage = function (url) {
-    const preview = document.getElementById('p-img-preview');
-    if (!preview) return;
-    preview.src = (url && url.length > 5) ? url : 'https://via.placeholder.com/150?text=Sem+Foto';
-    preview.onerror = () => { preview.src = 'https://via.placeholder.com/150?text=Link+Bloqueado'; };
-};
-
-window.pasteFromClipboard = async function () {
-    const inputField = document.getElementById('p-img');
-    const text = prompt('Cole o link da imagem aqui:', inputField ? inputField.value : "");
-    if (text) {
-        if (inputField) inputField.value = text;
-        window.previewNewImage(text);
-    }
-};
+// NOTA: previewNewImage e pasteFromClipboard definidas abaixo com versão completa (linha ~912)
 
 window.searchProductImage = function () {
     const name = document.getElementById('p-name').value;
@@ -536,8 +522,8 @@ window.generateA4BillingReport = function (start, end) {
     // Adaptar dados do faturamento para o formato da tabela A4
     window.currentReportItems = data.map(item => ({
         id: Date.now(),
-        name: item["Categoria"],
-        qty: 1, // Fixa
+        name: item["Descrição"],
+        qty: 1,
         cost: parseFloat(item["Valor (R$)"]) || 0,
         price: 0,
         isManual: false,
@@ -687,9 +673,9 @@ function generateCashFlowData(start, end) {
         "Data": new Date(t.date).toLocaleDateString(),
         "Descrição": t.desc,
         "Categoria": t.category,
-        "Método": t.method.toUpperCase(),
+        "Método": (t.method || 'PIX').toUpperCase(), // FIX: proteção contra null
         "Tipo": t.type === 'in' ? 'ENTRADA' : 'SAÍDA',
-        "Valor (R$)": (t.type === 'in' ? '' : '-') + t.amount.toFixed(2)
+        "Valor (R$)": (t.type === 'in' ? '' : '-') + (parseFloat(t.amount) || 0).toFixed(2)
     }));
 }
 
@@ -983,8 +969,8 @@ window.isFullStockReport = false;
 window.generateA4Report = function (isFullStock = false) {
     window.isFullStockReport = isFullStock;
     const data = isFullStock
-        ? window.InventoryStore.getFullStockReport('all')
-        : window.InventoryStore.getPurchaseReport(window.activeInventoryType);
+        ? window.InventoryStore.getFullStockReport(window.activeInventoryType || 'produto')
+        : window.InventoryStore.getPurchaseReport(window.activeInventoryType || 'produto');
 
     window.currentReportItems = data.map(p => ({
         id: p.id,
@@ -1748,7 +1734,7 @@ document.querySelectorAll('.nav-links li').forEach(li => {
 
         if (sectionId.startsWith('inventory-')) {
             window.activeInventoryType = li.dataset.type;
-            activeInventoryType = li.dataset.type;
+            // FIX: garantir referência global consistente
 
             const parent = li.closest('.nav-parent');
             document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
@@ -1822,8 +1808,18 @@ function navigateToSection(sectionId) {
 
 
 // --- FUNÇÕES DO RELATÓRIO INTERATIVO CONSOLIDADAS (MODO QUANTUM) ---
-
+// FIX: Exportar versões canônicas (com edição/histórico) para override das versões do reports.js
+window.renderReportPages = renderReportPages;
+window.removeReportItem = removeReportItem;
+window.updatePageItemQty = updatePageItemQty;
+window.calculateReportTotalValue = calculateReportTotalValue;
 window.addManualItemToReport = addManualItemToReport;
+window.closeReportModal = closeReportModal;
+window.saveReportToSystem = saveReportToSystem;
+window.editReportItem = editReportItem;
+window.closeEditReportItemModal = closeEditReportItemModal;
+window.saveEditReportItem = saveEditReportItem;
+window.updateEditReportItemCalculations = updateEditReportItemCalculations;
 if (typeof NFEScanner !== 'undefined') window.NFEScanner = NFEScanner;
 if (typeof importFullBackup !== 'undefined') window.importFullBackup = importFullBackup;
 if (typeof exportFullBackup !== 'undefined') window.exportFullBackup = exportFullBackup;
