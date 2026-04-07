@@ -580,11 +580,13 @@
             </section>
 
             <section id="inventory" class="view-section">
-                <div class="header-actions">
-                    <div></div> <!-- Espaçador para manter os botões na direita -->
-                    <div class="header-btns" style="align-items: center;">
-                        <h3 id="inventory-view-title" class="section-title"
-                            style="margin: 0; margin-right: 1.5rem; white-space: nowrap;">Gestão de Estoque</h3>
+                <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <!-- Título à esquerda -->
+                    <h3 id="inventory-view-title" class="section-title" style="margin: 0; white-space: nowrap; flex-shrink: 0;">
+                        Gestão de Estoque
+                    </h3>
+                    <!-- Botões à direita — flex-wrap para não sair da tela -->
+                    <div class="header-btns" style="align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                         <button class="add-btn" id="btn-compras" title="Gerar Planilha de Compras (Interativa)"
                             type="button"
                             onclick="try{ if(window.openA4ReportView) window.openA4ReportView(window.activeInventoryType||'all',false); else if(window.ReportManager&&window.ReportManager.generateStockReport) window.ReportManager.generateStockReport(window.activeInventoryType||'all'); else alert('Relatórios indisponíveis. Recarregue.'); }catch(e){alert('Erro: '+e.message)}">
