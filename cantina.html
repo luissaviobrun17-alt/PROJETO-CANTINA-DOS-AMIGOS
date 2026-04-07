@@ -601,6 +601,19 @@
                     </div>
                 </div>
 
+                <!-- Indicador de Status de Salvamento -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <span id="inventory-save-status"
+                          style="font-size: 0.75rem; color: #64748b; font-style: italic; transition: color 0.5s;">
+                        Carregando dados...
+                    </span>
+                    <button onclick="window.InventoryStore._emergencyExport()"
+                            style="font-size: 0.7rem; background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.3); color: var(--gold); border-radius: 6px; padding: 3px 10px; cursor: pointer;"
+                            title="Exportar cópia de segurança agora">
+                        ⬇️ Backup Manual
+                    </button>
+                </div>
+
                 <!-- Barra de Busca + Filtros de Categoria -->
                 <div id="inventory-filter-bar" style="margin: 0.5rem 0 0.75rem 0; display: flex; flex-direction: column; gap: 0.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -1686,6 +1699,21 @@
                 if (window.InventoryStore) {
                     window.InventoryStore.getAll();
                     bootLog.push('Inventario: ' + window.InventoryStore.products.length + ' produtos');
+
+                    // Atualizar indicador de status com metadados do último save
+                    try {
+                        const meta = JSON.parse(localStorage.getItem('cantina_products_meta') || '{}');
+                        const statusEl = document.getElementById('inventory-save-status');
+                        if (statusEl) {
+                            const count = window.InventoryStore.products.length;
+                            if (meta.lastSaved) {
+                                const dt = new Date(meta.lastSaved).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+                                statusEl.textContent = `💾 Último save: ${dt} · ${count} itens · ${meta.sizeKB || '?'}KB`;
+                            } else {
+                                statusEl.textContent = `📦 ${count} itens carregados`;
+                            }
+                        }
+                    } catch(e) {}
                 } else {
                     bootLog.push('Inventario: FALTA InventoryStore');
                 }
