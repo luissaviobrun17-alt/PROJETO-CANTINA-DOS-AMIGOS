@@ -124,19 +124,14 @@ function renderProducts(filteredList = null) {
         let inventoryProducts = (filteredList || allProducts)
             .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 
-        // Definir se estamos na visão de estoque para aplicar filtros de tipo
-        const isInventoryView = document.getElementById('inventory').classList.contains('active');
-
-        // Se for a visão normal de estoque, aplicar filtro de tipo (Produtos/Insumos)
-        if (isInventoryView && !filteredList) {
+        // FIX: sempre filtrar por tipo quando tableBody existe — não depender de #inventory.active
+        // porque o modal pode estar aberto sobrepondo a secção
+        if (!filteredList) {
             const targetType = window.activeInventoryType || 'produto';
-            if (targetType === 'all') {
-                // Modo completo: não filtra por tipo
-            } else {
-                let filtered = inventoryProducts.filter(p => p.type === targetType);
-                if (filtered.length === 0 && inventoryProducts.length > 0) {
-                    console.warn(`Nenhum item do tipo ${targetType} encontrado. Mostrando todos.`);
-                } else {
+            if (targetType !== 'all') {
+                const filtered = inventoryProducts.filter(p => p.type === targetType);
+                // Só restringe se houver resultados; senão mostra tudo para não sumir
+                if (filtered.length > 0) {
                     inventoryProducts = filtered;
                 }
             }
@@ -1607,10 +1602,32 @@ document.getElementById('product-form')?.addEventListener('submit', function (e)
     console.log("Iniciando submissão de formulário...");
 
     try {
-        // Verificação extra de validade (especialmente para campos ocultos)
-        if (!this.checkValidity()) {
-            console.error("Erro de validação nativa do formulário.");
-            alert("Por favor, preencha todos os campos obrigatórios.");
+        // Validação manual — mais confiável que checkValidity() com campos ocultos
+        const name = document.getElementById('p-name').value?.trim();
+        const type = document.getElementById('p-type').value;
+        const price = parseFloat(document.getElementById('p-price').value) || 0;
+        const cost = parseFloat(document.getElementById('p-cost').value) || 0;
+        const stock = document.getElementById('p-stock').value;
+        const min = document.getElementById('p-min').value;
+
+        if (!name) {
+            alert('Por favor, informe o Nome do produto.');
+            document.getElementById('p-name').focus();
+            return;
+        }
+        if (type === 'produto' && price <= 0) {
+            alert('Produto de venda precisa ter um Preço de Venda maior que zero.');
+            document.getElementById('p-price').focus();
+            return;
+        }
+        if (stock === '' || stock === null) {
+            alert('Por favor, informe o Estoque Atual.');
+            document.getElementById('p-stock').focus();
+            return;
+        }
+        if (min === '' || min === null) {
+            alert('Por favor, informe o Estoque Mínimo.');
+            document.getElementById('p-min').focus();
             return;
         }
 
@@ -1649,32 +1666,31 @@ document.getElementById('product-form')?.addEventListener('submit', function (e)
         // Feedback de sucesso no botão
         const btn = this.querySelector('.submit-btn-new');
         const originalText = editingProductId ? 'Atualizar Alterações' : 'Salvar Item';
-        btn.innerText = '✅ PROCESSANDO...';
+        btn.innerText = '✅ SALVANDO...';
         btn.style.background = '#27ae60';
 
-        setTimeout(async () => {
-            btn.innerText = editingProductId ? '✅ Alterações Salvas!' : '✅ Produto Salvo!';
+        const wasEditing = editingProductId; // capturar antes do timeout
 
-            // Pergunta se deseja exportar backup após salvar
-            if (confirm('Deseja exportar um backup atualizado para um arquivo?')) {
-                await exportFullBackup();
-            }
+        setTimeout(() => {
+            btn.innerText = wasEditing ? '✅ Alterações Salvas!' : '✅ Produto Salvo!';
 
             setTimeout(() => {
-                if (!editingProductId) {
-                    this.reset();
-                    document.getElementById('p-img-preview').src = 'https://via.placeholder.com/150?text=Próximo+Item';
-                    document.getElementById('p-type').value = window.activeInventoryType;
-                    updateModalFieldsByType(window.activeInventoryType);
-                    document.getElementById('p-name').focus();
+                if (!wasEditing) {
+                    // FIX: fechar modal e ir para o estoque para confirmar o cadastro
+                    closeProductModal();
+                    // Navegar para a seção estoque adequada
+                    const targetSection = window.activeInventoryType === 'insumo' ? 'inventory-insumos' : 'inventory-sales';
+                    const navItem = document.querySelector(`.nav-links li[data-section="${targetSection}"]`);
+                    if (navItem) navItem.click();
+                    else renderProducts();
                 } else {
                     closeProductModal();
                 }
                 btn.innerText = originalText;
                 btn.style.background = '';
                 renderProducts(); // Refresh final
-            }, 800);
-        }, 500);
+            }, 600);
+        }, 400);
 
     } catch (err) {
         console.error("CRITICAL ERROR NO SUBMIT:", err);
