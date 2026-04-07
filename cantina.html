@@ -1,0 +1,1922 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CANTINA DOS AMIGOS - Gestão Profissional</title>
+    <script>document.write('<link rel="stylesheet" href="css/style.css?v=' + Date.now() + '">');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        /* FIX: Manual do Sistema & Modals Z-Index/Background */
+        #help-tutorial-modal,
+        .modal {
+            z-index: 999999 !important;
+            background: rgba(0, 0, 0, 0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Ensure buttons don't float on top */
+        .add-btn,
+        .header-btns {
+            z-index: 1 !important;
+            position: relative;
+        }
+
+        /* FORÇAR BOTÕES SEMPRE CLICÁVEIS */
+        .add-btn,
+        #btn-compras,
+        #btn-scanner,
+        #btn-new-product {
+            pointer-events: auto !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            cursor: pointer !important;
+        }
+
+        /* ═══════ PRODUCT MODAL - HARMONIZADO ═══════ */
+        #product-modal .modal-content {
+            max-width: 1100px;
+            width: 95vw;
+            padding: 1.5rem 2rem;
+            border-radius: 16px;
+            max-height: 94vh;
+            overflow-y: auto;
+        }
+
+        #product-modal h2 {
+            font-size: 1.3rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modern-form.compact .form-main-content {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .modern-form.compact .form-fields {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .modern-form.compact .form-preview-side {
+            width: 200px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .modern-form.compact .form-preview-side>label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted, #94a3b8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .image-preview-compact {
+            width: 180px;
+            height: 180px;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .image-preview-compact img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted, #94a3b8);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .field-icon {
+            width: 14px;
+            height: 14px;
+            opacity: 0.6;
+        }
+
+        .form-group input,
+        .form-group select {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 0.55rem 0.85rem;
+            color: #fff;
+            font-size: 0.95rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+            outline: none;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .form-row.grid-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .input-with-btn {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .input-with-btn input {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .input-with-btn button,
+        .action-form-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .input-with-btn button:hover,
+        .action-form-btn:hover {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border-color: #10b981;
+        }
+
+        .google-emphasis-btn {
+            background: rgba(66, 133, 244, 0.12) !important;
+            color: #4285f4 !important;
+            border-color: rgba(66, 133, 244, 0.3) !important;
+            font-size: 0.7rem;
+            white-space: nowrap;
+            gap: 0.3rem;
+        }
+
+        .google-emphasis-btn:hover {
+            background: rgba(66, 133, 244, 0.25) !important;
+        }
+
+        .form-tip {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-top: 0.15rem;
+        }
+
+        .form-tip i {
+            width: 12px;
+            height: 12px;
+        }
+
+        /* Sidebar Actions */
+        .form-actions-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            width: 100%;
+        }
+
+        .submit-btn-new {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.45rem 0.75rem;
+            font-weight: 700;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .submit-btn-new:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+        }
+
+        .invoice-attach-btn {
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px dashed rgba(99, 102, 241, 0.4);
+            border-radius: 10px;
+            color: #818cf8;
+            padding: 0.55rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .invoice-attach-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #818cf8;
+        }
+
+        .back-navigation-btn {
+            background: rgba(100, 116, 139, 0.15);
+            border: 1px solid rgba(100, 116, 139, 0.25);
+            border-radius: 10px;
+            color: #94a3b8;
+            padding: 0.55rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .back-navigation-btn:hover {
+            background: rgba(100, 116, 139, 0.3);
+            color: #fff;
+        }
+
+        @media (max-width: 640px) {
+            .modern-form.compact .form-main-content {
+                flex-direction: column;
+            }
+
+            .modern-form.compact .form-preview-side {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .image-preview-compact {
+                width: 120px;
+                height: 120px;
+            }
+
+            .form-row,
+            .form-row.grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+        // --- CAPTURADOR DE ERROS GLOBAL v8.2 ---
+        window._erros = [];
+        window.onerror = function (msg, url, line) {
+            if (msg === 'Script error.' && line === 0) return false; // Ignorar CDN cross-origin
+            var file = url ? url.split('/').pop().split('?')[0] : 'inline';
+            var erro = 'ERRO: ' + msg + ' (' + file + ':' + line + ')';
+            window._erros.push(erro);
+            if (window._erros.length <= 3) alert(erro);
+            return false;
+        };
+    </script>
+    <script>
+        // --- SISTEMA DE RESGATE IMEDIATO (v7.5 - EMERGENCY FIX) ---
+        (function () {
+            const BYPASS_KEY = 'cantina_boot_v7.4_ok';
+
+            window.UPDATE_DEBUG = function (msg) {
+                const debug = document.getElementById('debug-console');
+                if (debug) debug.innerHTML = msg;
+                console.log("BOOT LOG:", msg);
+            };
+
+            window.FORCE_HIDE_BANNER = function () {
+                const banner = document.getElementById('boot-diagnostic-banner');
+                if (banner) {
+                    banner.remove(); // Remove completamente do DOM
+                    localStorage.setItem(BYPASS_KEY, 'true');
+                    console.log("Banner removido do DOM e bypass memorizado.");
+                }
+            };
+
+            // Verificação imediata de bypass anterior
+            if (localStorage.getItem(BYPASS_KEY) === 'true') {
+                console.log("Bypass detectado. Ocultando banner imediatamente.");
+                document.write('<style>#boot-diagnostic-banner { display: none !important; }</style>');
+            }
+
+            window.onerror = function (msg, url, lineNo) {
+                if (msg === 'Script error.' && lineNo === 0) return false;
+                var file = url ? url.split('/').pop().split('?')[0] : 'inline';
+                var erro = 'ERRO: ' + msg + ' (' + file + ':' + lineNo + ')';
+                window._erros = window._erros || [];
+                window._erros.push(erro);
+                if (window._erros.length <= 3) alert(erro);
+                window.UPDATE_DEBUG('❌ ' + erro);
+                return false;
+            };
+
+            // Auditoria Proativa de Módulos
+            const readyCheck = setInterval(() => {
+                const status = {
+                    inventory: !!window.InventoryStore,
+                    sales: !!window.SalesManager,
+                    lucide: !!window.lucide
+                };
+
+                console.log("Prontidão v7.5:", status);
+
+                if (status.inventory && status.sales && status.lucide) {
+                    window.UPDATE_DEBUG("🛡️ Sincronização Completa. Iniciando...");
+                    window.FORCE_HIDE_BANNER();
+                    clearInterval(readyCheck);
+                }
+            }, 800);
+
+            setTimeout(() => {
+                clearInterval(readyCheck);
+                // SEMPRE remover o banner após 3s, independentemente do estado
+                const banner = document.getElementById('boot-diagnostic-banner');
+                if (banner) {
+                    banner.remove();
+                    localStorage.setItem(BYPASS_KEY, 'true');
+                    console.log("Banner removido automaticamente após timeout.");
+                }
+            }, 3000);
+        })();
+    </script>
+
+    <!-- BANNER DE RESGATE TOTAL -->
+    <div id="boot-diagnostic-banner"
+        style="position: fixed; top: 0; left: 0; width: 100%; background: #ef4444; color: white; text-align: center; padding: 20px; z-index: 100000; font-family: sans-serif; box-shadow: 0 4px 20px rgba(0,0,0,0.7);">
+        <div style="font-size: 1.2rem; margin-bottom: 10px; font-weight: bold;">⚠️ BLOQUEIO DE SEGURANÇA: SISTEMA NÃO
+            INICIOU</div>
+        <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 10px;">
+            <button onclick="localStorage.clear(); sessionStorage.clear(); location.reload();"
+                style="background: white; color: #ef4444; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">LIMPAR
+                TUDO E RECARREGAR</button>
+            <button onclick="window.FORCE_HIDE_BANNER();"
+                style="background: #333; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; border: 1px solid #d4af37;">IGNORAR
+                E LIBERAR PERMANENTE</button>
+        </div>
+        <div id="debug-console"
+            style="background: rgba(0,0,0,0.3); padding: 5px; font-family: monospace; font-size: 0.8rem; border-radius: 3px;">
+            Aguardando sinal dos scripts... (Se esta mensagem não mudar, o erro é no HTML ou Conexão)
+        </div>
+    </div>
+
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="logo">
+                <img src="assets/logo_3d.png" alt="CANTINA DOS AMIGOS" class="logo-3d-img">
+            </div>
+
+            <ul class="nav-links">
+                <li class="active" data-section="home"><i data-lucide="layout-dashboard"></i> Painel</li>
+                <li data-section="sales"><i data-lucide="shopping-cart"></i> Gerar Pedido</li>
+                <li class="nav-parent" data-section="inventory">
+                    <span class="nav-parent-item"><i data-lucide="package"></i> Estoque</span>
+                    <ul class="nav-sub">
+                        <li data-section="inventory-sales" data-type="produto"><i data-lucide="tag"></i> Produtos
+                            (Venda)</li>
+                        <li data-section="inventory-insumos" data-type="insumo"><i data-lucide="utensils"></i> Insumos
+                            (Cozinha)</li>
+                    </ul>
+                </li>
+
+                <li data-section="customers"><i data-lucide="users"></i> Clientes</li>
+                <li data-section="finance"><i data-lucide="wallet"></i> Financeiro</li>
+                <li data-section="reports"><i data-lucide="bar-chart-3"></i> Relatórios</li>
+
+                <li data-section="admin"
+                    style="border-top: 1px solid rgba(212,175,55,0.1); margin-top: 0.5rem; padding-top: 0.5rem;">
+                    <i data-lucide="settings"></i> Admin
+                </li>
+                <li onclick="openHelpTutorial()" class="nav-help-btn">
+                    <i data-lucide="book-open"></i> Manual do Sistema
+                </li>
+
+                <li class="nav-divider"></li>
+                <li class="nav-external" onclick="window.emergencyReset()" style="color: #ef4444; cursor: pointer;">
+                    <i data-lucide="refresh-cw"></i> LIMPEZA DE EMERGÊNCIA
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="dot online"></span>
+                    <span>Provida Sync: OK</span>
+                    <span style="display:block; font-size: 0.7em; color: #64748b; margin-top: 4px;">v1.6
+                        (Advanced Sync)</span>
+                </div>
+            </div>
+        </nav>
+
+        <main class="content">
+            <div class="motto-banner" style="padding: 0.3rem 0; margin-bottom: 0.3rem;">
+                <h1 class="golden-phrase" style="font-size: 0.95rem; margin: 0;">" ORGANIZAÇÃO É SINAL DE EVOLUÇÃO "
+                </h1>
+            </div>
+            <header class="top-header">
+            </header>
+
+            <div class="modern-divider-horizon" style="margin-top: 0;">
+                <span class="flare"></span>
+            </div>
+
+            <section id="home" class="view-section active">
+                <div class="welcome-banner">
+                    <h2>Bem-vindo à <span class="gold-text">Cantina dos Amigos</span></h2>
+                </div>
+
+                <div class="showcase-section">
+                    <h3 class="section-title">Produtos em Destaque</h3>
+                    <div id="product-list" class="product-grid">
+                        <!-- Products will be injected by JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <section id="sales" class="view-section">
+
+
+                <div class="sales-container">
+                    <div class="sales-products-side">
+                        <div class="section-header-flex">
+                            <h3 class="section-title">Selecionar Itens</h3>
+                            <div class="sales-search-box">
+                                <i data-lucide="search" onclick="SalesManager.focusSearch()"
+                                    style="cursor: pointer;"></i>
+                                <input type="text" placeholder="Buscar produto..."
+                                    oninput="SalesManager.filterProducts(this.value)">
+                            </div>
+                        </div>
+                        <div class="category-buttons-grid">
+                            <button class="category-btn active" data-category="all"
+                                onclick="SalesManager.filterByCategory('all')">
+                                <span>Todos</span>
+                            </button>
+                            <button class="category-btn" data-category="Salgados"
+                                onclick="SalesManager.filterByCategory('Salgados')">
+                                <i data-lucide="sandwich"></i>
+                                <span>Salgados</span>
+                            </button>
+                            <button class="category-btn" data-category="Bebidas"
+                                onclick="SalesManager.filterByCategory('Bebidas')">
+                                <i data-lucide="coffee"></i>
+                                <span>Bebidas</span>
+                            </button>
+                            <button class="category-btn" data-category="Doces"
+                                onclick="SalesManager.filterByCategory('Doces')">
+                                <i data-lucide="candy"></i>
+                                <span>Doces</span>
+                            </button>
+                            <button class="category-btn" data-category="Almoço / Jantar"
+                                onclick="SalesManager.filterByCategory('Almoço / Jantar')">
+                                <i data-lucide="utensils"></i>
+                                <span>Almoço / Jantar</span>
+                            </button>
+                        </div>
+                        <div class="sales-scroll-area">
+                            <div id="sales-product-grid" class="sales-list-view" style="margin-top: 1rem;">
+                                <!-- Produtos filtrados por categoria aparecerão aqui -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sales-divider"></div>
+
+                    <aside class="sales-cart-side">
+                        <div class="modern-cart-header"
+                            style="margin-bottom: 0.4rem; padding-bottom: 0.3rem; display: flex; flex-direction: column; align-items: center;">
+                            <h3 class="gold-text"
+                                style="font-size: 1.3rem; margin: 0; font-weight: 800; text-align: center;">PEDIDO</h3>
+                            <div
+                                style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-top: 2px;">
+                                <span class="order-id-badge" id="pdv-order-id"
+                                    style="font-size: 0.75rem; opacity: 0.8;">Nº 000000</span>
+                                <div id="pdv-current-dt" class="pdv-date-time-badge"
+                                    style="font-size: 0.65rem; gap: 4px;">
+                                    <span id="dt-date">..-..-....</span>
+                                    <span id="dt-time">00:00</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="cart-customer-compact-search">
+                            <div class="cart-customer-icon-wrapper">
+                                <i data-lucide="user"></i>
+                            </div>
+                            <div class="customer-search-select-group">
+                                <input type="text" id="pdv-customer-search" placeholder="Buscar cliente..."
+                                    oninput="SalesManager.filterCustomers(this.value)">
+                                <select id="pdv-customer-select">
+                                    <!-- Clientes -->
+                                </select>
+                            </div>
+                        </div>
+                        <div id="cart-items" class="cart-list">
+                            <!-- Carrinho -->
+                        </div>
+                        <div class="cart-payment-compact">
+                            <i data-lucide="credit-card" class="dt-icon"></i>
+                            <span class="card-label">Pagamento:</span>
+                            <select id="pdv-payment-method" class="compact-select">
+                                <option value="pix">PIX</option>
+                                <option value="cash">Dinheiro</option>
+                                <option value="credit">Cartão de Crédito</option>
+                                <option value="debit">Cartão de Débito</option>
+                            </select>
+                        </div>
+                        <div class="total-row mt-4">
+                            <span>Total:</span>
+                            <span id="cart-total" class="gold-text">R$ 0,00</span>
+                        </div>
+                        <button class="generate-order-btn" onclick="SalesManager.generateOrder()">
+                            <i data-lucide="check-circle"></i> Gerar Pedido
+                        </button>
+                    </aside>
+                </div>
+            </section>
+
+            <section id="inventory" class="view-section">
+                <div class="header-actions">
+                    <div></div> <!-- Espaçador para manter os botões na direita -->
+                    <div class="header-btns" style="align-items: center;">
+                        <h3 id="inventory-view-title" class="section-title"
+                            style="margin: 0; margin-right: 1.5rem; white-space: nowrap;">Gestão de Estoque</h3>
+                        <button class="add-btn" id="btn-compras" title="Gerar Planilha de Compras (Interativa)"
+                            type="button"
+                            onclick="try{ if(window.openA4ReportView) window.openA4ReportView(window.activeInventoryType||'all',false); else if(window.ReportManager&&window.ReportManager.generateStockReport) window.ReportManager.generateStockReport(window.activeInventoryType||'all'); else alert('Relatórios indisponíveis. Recarregue.'); }catch(e){alert('Erro: '+e.message)}">
+                            <i data-lucide="shopping-cart"></i> Compras
+                        </button>
+                        <button class="add-btn" id="btn-scanner" title="Escanear Nota Fiscal (NF-e)" type="button"
+                            onclick="try{ if(window.NFEScanner){if(!document.getElementById('nfe-scan-modal'))window.NFEScanner.init();window.NFEScanner.open(window.importScannedItems||function(){});}else alert('Scanner não carregou.'); }catch(e){alert('Erro: '+e.message)}">
+                            <i data-lucide="scan"></i> Escanear NF-e
+                        </button>
+                        <button class="add-btn" id="btn-new-product" type="button"
+                            onclick="try{ if(window.openProductModal) window.openProductModal(); else { var m=document.getElementById('product-modal'); if(m){m.classList.add('active');} else alert('Modal não encontrado.');} }catch(e){alert('Erro: '+e.message)}">
+                            <i data-lucide="plus"></i> Novo Produto
+                        </button>
+                    </div>
+                </div>
+                <div class="inventory-table-container glass">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Nome</th>
+                                <th>Categoria</th>
+                                <th id="col-venda-head">Valores (V/C)</th>
+                                <th>Estoque</th>
+                                <th>Mínimo</th>
+                                <th>Status</th>
+                                <th style="width: 100px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+
+            <section id="customers" class="view-section">
+                <div class="section-header-flex">
+                    <h3 class="section-title">Cadastro de Clientes</h3>
+                    <button class="add-btn" onclick="openCustomerModal()">
+                        <i data-lucide="user-plus"></i> Novo Cliente
+                    </button>
+                </div>
+
+                <div class="inventory-table-container glass mt-4">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Contato</th>
+                                <th>Endereço</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customer-table-body">
+                            <!-- Injetado por JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="finance" class="view-section">
+                <div class="section-header-flex">
+                    <h3 class="section-title">Controle Financeiro ERP</h3>
+                    <div class="finance-tabs no-print">
+                        <button class="tab-btn active" data-tab="fin-dashboard">
+                            <i data-lucide="layout-dashboard"></i> Resumo
+                        </button>
+                        <button class="tab-btn" data-tab="fin-cash">
+                            <i data-lucide="banknote"></i> Caixa
+                        </button>
+                        <button class="tab-btn" data-tab="fin-accounts">
+                            <i data-lucide="book-open"></i> Contas
+                        </button>
+                        <button class="tab-btn" data-tab="fin-reports">
+                            <i data-lucide="file-bar-chart"></i> Relatórios
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sub-seção: Resumo Dashboard -->
+                <div id="fin-dashboard" class="finance-tab-content active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <i data-lucide="wallet" class="gold"></i>
+                            <div class="stat-info">
+                                <label>Saldo Geral</label>
+                                <span id="total-balance" class="value gold-text">R$ 0,00</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i data-lucide="trending-up" class="gold"></i>
+                            <div class="stat-info">
+                                <label>Entradas (Mês)</label>
+                                <span id="monthly-in" class="value" style="color: #10b981;">R$ 0,00</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i data-lucide="trending-down" class="gold"></i>
+                            <div class="stat-info">
+                                <label>Saídas (Mês)</label>
+                                <span id="monthly-out" class="value" style="color: #ef4444;">R$ 0,00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="finance-overview mt-4">
+                        <div class="closure-action">
+                            <button class="close-day-btn" onclick="FinanceManager.openTransactionModal('out')">
+                                <i data-lucide="minus-circle"></i> Registrar Despesa
+                            </button>
+                            <button class="close-day-btn" style="background: var(--gold-gradient);"
+                                onclick="FinanceManager.handleCloseDay()">
+                                <i data-lucide="lock"></i> Fechamento Diário
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="history-section mt-4">
+                        <h4>Transações Recentes</h4>
+                        <div id="transaction-history" class="transaction-list glass">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub-seção: Controle de Caixa -->
+                <div id="fin-cash" class="finance-tab-content">
+                    <div class="header-actions">
+                        <h4>Fluxo de Caixa Detalhado</h4>
+                        <div class="filter-group">
+                            <select id="cash-period-filter" onchange="FinanceManager.filterCashFlow()">
+                                <option value="daily">Diário</option>
+                                <option value="weekly">Semanal</option>
+                                <option value="monthly" selected>Mensal</option>
+                                <option value="yearly">Anual</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="inventory-table-container glass mt-2">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Método</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cash-flow-body">
+                                <!-- Injetado por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sub-seção: Contas a Pagar/Receber -->
+                <div id="fin-accounts" class="finance-tab-content">
+                    <div class="accounts-container">
+                        <div class="accounts-column">
+                            <div class="header-actions">
+                                <h4>Contas a Pagar</h4>
+                                <button class="add-btn sm"
+                                    onclick="FinanceManager.openAccountModal('payable')">+</button>
+                            </div>
+                            <div id="payable-list" class="account-items-list mt-2">
+                                <!-- Injetado por JS -->
+                            </div>
+                        </div>
+                        <div class="accounts-column">
+                            <div class="header-actions">
+                                <h4>Contas a Receber</h4>
+                                <button class="add-btn sm"
+                                    onclick="FinanceManager.openAccountModal('receivable')">+</button>
+                            </div>
+                            <div id="receivable-list" class="account-items-list mt-2">
+                                <!-- Injetado por JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sub-seção: Relatórios -->
+                <div id="fin-reports" class="finance-tab-content">
+                    <div class="quick-access-grid">
+                        <div class="folder-card" onclick="FinanceManager.generateReport('cashflow')">
+                            <div class="folder-icon"><i data-lucide="file-text"></i></div>
+                            <div class="folder-info">
+                                <span class="folder-name">Fluxo de Caixa</span>
+                                <span class="folder-desc">Entradas e Saídas</span>
+                            </div>
+                        </div>
+                        <div class="folder-card" onclick="FinanceManager.generateReport('dre')">
+                            <div class="folder-icon" style="background: linear-gradient(135deg, #f59e0b, #b45309);"><i
+                                    data-lucide="pie-chart"></i></div>
+                            <div class="folder-info">
+                                <span class="folder-name">DRE</span>
+                                <span class="folder-desc">Demonstração de Resultados</span>
+                            </div>
+                        </div>
+                        <div class="folder-card" onclick="FinanceManager.generateReport('inventory')">
+                            <div class="folder-icon" style="background: linear-gradient(135deg, #10B981, #059669);"><i
+                                    data-lucide="clipboard-list"></i></div>
+                            <div class="folder-info">
+                                <span class="folder-name">Balanço</span>
+                                <span class="folder-desc">Patrimonial Simplificado</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="reports" class="view-section">
+                <h3 class="section-title">Central de Relatórios Profissionais</h3>
+
+                <div class="quick-access-grid">
+                    <!-- Estoque -->
+                    <div class="folder-card" onclick="ReportManager.generateStockReport('produto')">
+                        <div class="folder-icon"><i data-lucide="package"></i></div>
+                        <div class="folder-info">
+                            <span class="folder-name">ESTOQUE</span>
+                            <span class="folder-desc">Produtos Vendas</span>
+                        </div>
+                    </div>
+
+                    <div class="folder-card" onclick="openDeletedA4Report()">
+                        <div class="folder-icon" style="background: linear-gradient(135deg, #ef4444, #b91c1c);">
+                            <i data-lucide="trash-2"></i>
+                        </div>
+                        <div class="folder-info">
+                            <span class="folder-name">CANCELAMENTO</span>
+                            <span class="folder-desc">Auditoria de Exclusões</span>
+                        </div>
+                    </div>
+
+                    <!-- Vendas por Produto -->
+                    <div class="folder-card" onclick="openSalesA4Report()">
+                        <div class="folder-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                            <i data-lucide="bar-chart"></i>
+                        </div>
+                        <div class="folder-info">
+                            <span class="folder-name">VENDAS</span>
+                            <span class="folder-desc">Por Produto (Consolidado)</span>
+                        </div>
+                    </div>
+
+                    <!-- Consumo por Cliente -->
+                    <div class="folder-card" onclick="openConsumptionA4Report()">
+                        <div class="folder-icon" style="background: linear-gradient(135deg, #8b5cf6, #5b21b6);">
+                            <i data-lucide="shopping-bag"></i>
+                        </div>
+                        <div class="folder-info">
+                            <span class="folder-name">CONSUMO</span>
+                            <span class="folder-desc">Por Cliente (Frequência)</span>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Clientes -->
+                    <div class="folder-card" onclick="openCustomersA4Report()">
+                        <div class="folder-icon" style="background: linear-gradient(135deg, #6366f1, #4338ca);">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <div class="folder-info">
+                            <span class="folder-name">LISTA DE CLIENTES</span>
+                            <span class="folder-desc">Contatos e Endereços</span>
+                        </div>
+                    </div>
+
+                    <!-- Faturamento Detalhado -->
+                    <div class="folder-card" onclick="openBillingA4Report()">
+                        <div class="folder-icon" style="background: linear-gradient(135deg, #f59e0b, #b45309);">
+                            <i data-lucide="dollar-sign"></i>
+                        </div>
+                        <div class="folder-info">
+                            <span class="folder-name">FATURAMENTO</span>
+                            <span class="folder-desc">Diário, Mensal e Anual</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
+            <section id="admin" class="view-section">
+                <div class="section-header-flex">
+                    <h3 class="section-title">Configurações e Usuários</h3>
+                </div>
+
+                <div class="admin-grid mt-4">
+                    <!-- Usuário Administrador -->
+                    <div id="admin-card-container">
+                        <!-- Injetado por JS -->
+                    </div>
+
+                    <!-- Auxiliares -->
+                    <div id="assistants-container" class="assistants-list">
+                        <!-- Injetado por JS -->
+                    </div>
+
+                    <!-- Recuperação de Dados -->
+                    <div class="backup-controls-group">
+                        <div style="flex:1;">
+                            <h4 style="color:#10b981; margin-bottom:0.5rem;"><i data-lucide="save"></i> SEGURANÇA DE
+                                DADOS</h4>
+                            <p style="color:#ccc; font-size:0.9rem;">Salve seus dados regularmente para não perder dias
+                                de trabalho.</p>
+                        </div>
+
+                        <button onclick="exportFullBackup()" class="btn-backup primary">
+                            <i data-lucide="download"></i> FAZER BACKUP AGORA
+                        </button>
+
+                        <button onclick="importFullBackup()" class="btn-backup secondary">
+                            <i data-lucide="upload"></i> RECUPERAR BACKUP
+                        </button>
+
+                        <button onclick="window.open('DEEP_RECOVERY.html', '_blank')" class="btn-backup"
+                            style="background: rgba(212, 175, 55, 0.1); color: var(--gold); border: 1px dashed var(--gold);">
+                            <i data-lucide="search"></i> DIAGNÓSTICO PROFUNDO
+                        </button>
+                    </div>
+
+                    <!-- Removido: Centro de Ajuda / Tutorial original (Agora no Sidebar) -->
+                </div>
+            </section>
+
+            <!-- Manual COMPLETO moved to end of file (Line ~1323) -->
+            <div id="help-tutorial-modal" class="modal">
+                <div class="modal-content glass"
+                    style="width: 100vw; height: 100vh; max-width: none; border-radius: 0; padding: 2rem 2rem 0 2rem; display: flex; flex-direction: column; overflow: hidden;">
+                    <div class="tutorial-header"
+                        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--gold); padding-bottom: 1.5rem; margin-bottom: 2rem; flex-shrink: 0;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <i data-lucide="book-open" style="width: 32px; height: 32px; color: var(--gold);"></i>
+                            <h2 class="gold-text orbitron" style="font-size: 1.8rem; margin: 0; letter-spacing: 2px;">
+                                MANUAL COMPLETO DE OPERAÇÃO
+                            </h2>
+                        </div>
+                        <button class="a4-back-icon-btn" onclick="closeHelpTutorial()"
+                            style="background: #64748b; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 800; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="arrow-left"></i> VOLTAR
+                        </button>
+                    </div>
+
+                    <div class="tutorial-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; flex: 1; overflow-y: auto; padding: 1.5rem; align-content: start; background: rgba(0,0,0,0.3); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); scrollbar-width: thin; scrollbar-color: var(--gold) rgba(0,0,0,0.1);">
+                        <!-- 1. PAINEL -->
+                        <div class="help-step"
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); display: flex; flex-direction: column;">
+                            <h4
+                                style="color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.75rem;">
+                                <i data-lucide="layout-dashboard"></i> 1. PAINEL DE CONTROLE
+                            </h4>
+                            <p style="font-size: 0.9rem; color: #fff; font-weight: 600; margin-bottom: 1rem;">Onde tudo
+                                começa:</p>
+                            <ul
+                                style="font-size: 0.85rem; color: #ccc; padding-left: 1.2rem; line-height: 1.8; flex: 1;">
+                                <li><strong>Dashboard:</strong> Veja seu Saldo e Faturamento do mês em tempo real.</li>
+                                <li><strong>Destaques:</strong> Produtos de venda rápida aparecem aqui. Você pode
+                                    remover destaques sem apagar o produto do estoque.</li>
+                            </ul>
+                        </div>
+
+                        <!-- 2. PEDIDOS -->
+                        <div class="help-step"
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); display: flex; flex-direction: column;">
+                            <h4
+                                style="color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.75rem;">
+                                <i data-lucide="shopping-cart"></i> 2. GERAR PEDIDO (PDV)
+                            </h4>
+                            <p style="font-size: 0.9rem; color: #fff; font-weight: 600; margin-bottom: 1rem;">Operação
+                                de Venda:</p>
+                            <ol
+                                style="font-size: 0.85rem; color: #ccc; padding-left: 1.5rem; line-height: 1.8; flex: 1;">
+                                <li>Escolha o <strong>Cliente</strong> (obrigatório para controle).</li>
+                                <li>Selecione os itens pelas <strong>Categorias</strong>.</li>
+                                <li>Confira o carrinho e clique em <strong>Finalizar</strong>.</li>
+                                <li>Escolha a forma de pagamento (Dinheiro, Pix, Cartão).</li>
+                            </ol>
+                        </div>
+
+                        <!-- 3. ESTOQUE -->
+                        <div class="help-step"
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); display: flex; flex-direction: column;">
+                            <h4
+                                style="color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.75rem;">
+                                <i data-lucide="package"></i> 3. ESTOQUE E INSUMOS
+                            </h4>
+                            <p style="font-size: 0.9rem; color: #fff; font-weight: 600; margin-bottom: 1rem;">Gestão de
+                                Materiais:</p>
+                            <ul
+                                style="font-size: 0.85rem; color: #ccc; padding-left: 1.2rem; line-height: 1.8; flex: 1;">
+                                <li><strong>Produtos:</strong> Itens que você vende.</li>
+                                <li><strong>Insumos:</strong> Ingredientes que você usa para preparar produtos.</li>
+                                <li><strong>Alertas:</strong> Itens em vermelho estão abaixo do estoque mínimo.</li>
+                            </ul>
+                        </div>
+
+                        <!-- 4. CLIENTES -->
+                        <div class="help-step"
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); display: flex; flex-direction: column;">
+                            <h4
+                                style="color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.75rem;">
+                                <i data-lucide="users"></i> 4. GESTÃO DE CLIENTES
+                            </h4>
+                            <p style="font-size: 0.9rem; color: #fff; font-weight: 600; margin-bottom: 1rem;">Cadastro e
+                                Fiados:</p>
+                            <ul
+                                style="font-size: 0.85rem; color: #ccc; padding-left: 1.2rem; line-height: 1.8; flex: 1;">
+                                <li>Mantenha fotos e telefones atualizados.</li>
+                                <li>Acompanhe o <strong>Extrato de Compras</strong> de cada cliente.</li>
+                                <li>Gerencie limites e saldos devedores com precisão.</li>
+                            </ul>
+                        </div>
+
+                        <!-- 5. FINANCEIRO -->
+                        <div class="help-step"
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); display: flex; flex-direction: column;">
+                            <h4
+                                style="color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.75rem;">
+                                <i data-lucide="wallet"></i> 5. FINANCEIRO E CAIXA
+                            </h4>
+                            <p style="font-size: 0.9rem; color: #fff; font-weight: 600; margin-bottom: 1rem;">Dinheiro e
+                                Contas:</p>
+                            <ul
+                                style="font-size: 0.85rem; color: #ccc; padding-left: 1.2rem; line-height: 1.8; flex: 1;">
+                                <li>Registre <strong>Despesas</strong> (aluguel, compras) para saber seu lucro real.
+                                </li>
+                                <li>Concilie entradas por Pix, Cartão e Dinheiro.</li>
+                                <li>O DRE mostra se o mês fechou no azul ou no vermelho.</li>
+                            </ul>
+                        </div>
+
+                        <!-- 6. RELATÓRIOS -->
+                        <div class="help-step"
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); display: flex; flex-direction: column;">
+                            <h4
+                                style="color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.75rem;">
+                                <i data-lucide="file-text"></i> 6. RELATÓRIOS A4
+                            </h4>
+                            <p style="font-size: 0.9rem; color: #fff; font-weight: 600; margin-bottom: 1rem;">Impressão
+                                Profissional:</p>
+                            <ul
+                                style="font-size: 0.85rem; color: #ccc; padding-left: 1.2rem; line-height: 1.8; flex: 1;">
+                                <li>Documentos otimizados para preto e branco em folha branca.</li>
+                                <li>Gere <strong>Inventários</strong> e <strong>Listas de Compras</strong> automáticas.
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- 7. SEGURANÇA -->
+                        <div class="help-step"
+                            style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(0,0,0,0.2)); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.3); display: flex; flex-direction: column;">
+                            <h4
+                                style="color: #10b981; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid rgba(16, 185, 129, 0.2); padding-bottom: 0.75rem;">
+                                <i data-lucide="shield-check"></i> 7. SEGURANÇA E BACKUP
+                            </h4>
+                            <p style="font-size: 0.85rem; color: #fff; line-height: 1.8; flex: 1;">
+                                <strong>Regra de Ouro:</strong> Exporte seu backup diariamente para um Pen Drive ou
+                                E-mail. Em caso de falha no PC, você não perde nada.
+                            </p>
+                        </div>
+
+                        <!-- 8. NFe SCANNER -->
+                        <div class="help-step"
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); display: flex; flex-direction: column;">
+                            <h4
+                                style="color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.75rem;">
+                                <i data-lucide="scan-face"></i> 8. SCANNER DE NOTAS (NFe)
+                            </h4>
+                            <p style="font-size: 0.85rem; color: #ccc; line-height: 1.8; flex: 1;">
+                                Use a câmera do celular ou carregue o PDF da nota fiscal. O sistema tenta extrair os
+                                dados e você pode anexar o documento diretamente ao cadastro do produto.
+                            </p>
+                        </div>
+
+                        <!-- 9. VITRINE (DESTAQUES) -->
+                        <div class="help-step"
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); display: flex; flex-direction: column;">
+                            <h4
+                                style="color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.75rem;">
+                                <i data-lucide="star"></i> 9. VITRINE E DESTAQUES
+                            </h4>
+                            <p style="font-size: 0.85rem; color: #ccc; line-height: 1.8; flex: 1;">
+                                No Painel Inicial, você vê os produtos em destaque. <strong>Remover da vitrine</strong>
+                                não apaga o produto do estoque, apenas o oculta da tela inicial.
+                            </p>
+                        </div>
+
+                        <!-- 10. COZINHA E INSUMOS -->
+                        <div class="help-step"
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); display: flex; flex-direction: column;">
+                            <h4
+                                style="color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.75rem;">
+                                <i data-lucide="utensils"></i> 10. COZINHA E INSUMOS
+                            </h4>
+                            <p style="font-size: 0.85rem; color: #ccc; line-height: 1.8; flex: 1;">
+                                Insumos são materiais de produção (farinha, óleo). Eles não aparecem no PDV para venda,
+                                servem apenas para controle de compras e custos de produção.
+                            </p>
+                        </div>
+
+                        <!-- 11. SALDOS E FIADOS -->
+                        <div class="help-step"
+                            style="background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(212,175,55,0.3); display: flex; flex-direction: column;">
+                            <h4
+                                style="color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; border-bottom: 1px solid rgba(212,175,55,0.2); padding-bottom: 0.75rem;">
+                                <i data-lucide="landmark"></i> 11. SALDOS E "FIADOS"
+                            </h4>
+                            <p style="font-size: 0.85rem; color: #ccc; line-height: 1.8; flex: 1;">
+                                No cadastro do cliente, você pode ver o <strong>Saldo Devedor</strong>. O extrato
+                                detalha o que foi comprado em cada data para conferência rápida com o cliente.
+                            </p>
+                        </div>
+
+                        <!-- 12. GUIA DE NAVEGAÇÃO -->
+                        <div class="help-step"
+                            style="background: rgba(212,175,55,0.07); padding: 1.5rem; border-radius: 15px; border: 2px solid var(--gold); grid-column: span 2; display: flex; flex-direction: column;">
+                            <h4
+                                style="color: var(--gold); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 1rem; font-size: 1.3rem;">
+                                <i data-lucide="navigation" style="width: 24px; height: 24px;"></i> 12. GUIA DE
+                                NAVEGAÇÃO RÁPIDA
+                            </h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                <div style="font-size: 0.9rem; color: #fff; line-height: 1.8;">
+                                    <strong>Comandos do Menu:</strong>
+                                    <ul style="padding-left: 1.5rem;">
+                                        <li><strong>Menu Lateral:</strong> Acesso a todas as áreas.</li>
+                                        <li><strong>Barra de Busca:</strong> Procure por qualquer item instantaneamente.
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div style="font-size: 0.9rem; color: #fff; line-height: 1.8;">
+                                    <strong>Dicas do Mestre:</strong>
+                                    <ul style="padding-left: 1.5rem;">
+                                        <li><strong>Botão VOLTAR:</strong> Retorna um nível na navegação.</li>
+                                        <li><strong>Finalizar Dia:</strong> Use o relatório de faturamento para conferir
+                                            o caixa.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rodapé removido conforme solicitação para o conteúdo ir até o final -->
+                </div>
+            </div>
+            <!-- FIM do help-tutorial-modal - ESTA TAG ESTAVA FALTANDO! -->
+
+            <div id="payment-modal" class="modal">
+                <div class="modal-content glass">
+                    <h2 class="gold-text">Pagamento Bradesco</h2>
+                    <div class="payment-options">
+                        <button class="pay-btn" data-type="credit">
+                            <i data-lucide="credit-card"></i> Crédito
+                        </button>
+                        <button class="pay-btn" data-type="debit">
+                            <i data-lucide="credit-card"></i> Débito
+                        </button>
+                        <button class="pay-btn" data-type="pix">
+                            <i data-lucide="qr-code"></i> PIX
+                        </button>
+                    </div>
+                    <button class="close-modal-btn" id="close-pay-modal">Cancelar</button>
+                </div>
+            </div>
+
+
+            <div id="product-modal" class="modal">
+
+                <div class="modal-content glass">
+                    <h2 class="gold-text">Novo Produto</h2>
+                    <form id="product-form" class="modern-form compact">
+                        <div class="form-main-content">
+                            <div class="form-fields">
+                                <div class="form-group">
+                                    <label><i data-lucide="tag" class="field-icon icon-name"></i> Nome do Produto /
+                                        Item</label>
+                                    <div class="input-with-btn">
+                                        <input type="text" id="p-name" required placeholder="Ex: Salgado de Frango">
+                                        <button type="button" class="google-emphasis-btn" onclick="searchProductImage()"
+                                            title="Buscar no Google">
+                                            <i data-lucide="search"></i> <span>Google Images</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label><i data-lucide="image" class="field-icon icon-img"></i> Figura (Link ou
+                                        Arquivo)</label>
+                                    <div class="input-with-btn">
+                                        <input type="text" id="p-img" placeholder="URL da imagem..."
+                                            oninput="previewNewImage(this.value)">
+                                        <button type="button" class="action-form-btn search"
+                                            onclick="searchProductImage()" title="Buscar no Google"><i
+                                                data-lucide="search"></i></button>
+                                        <button type="button" class="action-form-btn paste"
+                                            onclick="pasteFromClipboard()" title="Colar Link"><i
+                                                data-lucide="link"></i></button>
+                                        <button type="button" class="action-form-btn upload"
+                                            onclick="document.getElementById('file-input').click()"
+                                            title="Foto do PC"><i data-lucide="folder-open"></i></button>
+                                        <input type="file" id="file-input" style="display: none" accept="image/*"
+                                            onchange="handleFileUpload(this)">
+                                    </div>
+                                    <small class="form-tip"><i data-lucide="info"></i> Dica: Use "Copiar endereço da
+                                        imagem" no
+                                        seu navegador.</small>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label><i data-lucide="layers" class="field-icon icon-type"></i> Tipo de
+                                            Estoque</label>
+                                        <select id="p-type" required>
+                                            <option value="produto">Produto (Venda)</option>
+                                            <option value="insumo">Insumo (Cozinha)</option>
+                                            <option value="geral">Materiais Gerais / Limpeza</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row grid-3">
+                                    <div class="form-group" id="p-price-group">
+                                        <label><i data-lucide="dollar-sign" class="field-icon icon-price"></i> Preço
+                                            de
+                                            Venda</label>
+                                        <input type="number" id="p-price" step="0.01" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i data-lucide="shopping-bag" class="field-icon icon-cost"></i> Preço
+                                            de
+                                            Custo</label>
+                                        <input type="number" id="p-cost" step="0.01" required placeholder="R$ 0,00">
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i data-lucide="folder" class="field-icon icon-category"></i>
+                                            Categoria</label>
+                                        <select id="p-category">
+                                            <option value="Salgados">Salgados</option>
+                                            <option value="Bebidas">Bebidas</option>
+                                            <option value="Doces">Doces</option>
+                                            <option value="Almoço">Almoço</option>
+                                            <option value="Jantar">Jantar</option>
+                                            <option value="Insumos">Insumos (Cozinha)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label><i data-lucide="package" class="field-icon icon-stock"></i> Estoque
+                                            Atual</label>
+                                        <input type="number" id="p-stock" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label><i data-lucide="alert-circle" class="field-icon icon-min"></i>
+                                            Mínimo</label>
+                                        <input type="number" id="p-min" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-preview-side">
+                                <label>Prévia</label>
+                                <div id="image-preview-container" class="image-preview-compact glass">
+                                    <img id="p-img-preview" src="https://via.placeholder.com/150?text=Sem+Foto"
+                                        alt="Preview">
+                                </div>
+                                <div class="form-actions-sidebar">
+                                    <button type="submit" class="submit-btn-new">Salvar Item</button>
+
+                                    <button type="button" class="invoice-attach-btn" id="invoice-btn-modal"
+                                        onclick="document.getElementById('invoice-input').click()">
+                                        <i data-lucide="file-up"></i>
+                                        <span>Anexar Nota</span>
+                                        <input type="hidden" id="p-invoice">
+                                        <input type="file" id="invoice-input" style="display: none"
+                                            accept="image/*,application/pdf" capture="environment"
+                                            onchange="handleInvoiceUpload(this)">
+                                    </button>
+
+                                    <button type="button" class="back-navigation-btn" onclick="closeProductModal()">
+                                        <i data-lucide="arrow-left"></i>
+                                        <span>Voltar</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="report-modal" class="modal interactive-report-modal">
+                <div class="modal-content interactive-report-content glass" style="max-width: 95vw; height: 90vh;">
+                    <div class="report-header no-print">
+                        <div class="header-left" style="display: flex; align-items: center; gap: 1rem;">
+                            <img src="assets/logo_3d.png" alt="Logo" class="report-logo" style="max-height: 50px;"
+                                onerror="this.style.display='none'">
+                            <div>
+                                <h2 style="margin:0">CANTINA DOS AMIGOS</h2>
+                                <p style="margin:0; font-size:0.8rem; color: var(--text-muted)">Planilha de Compras
+                                    e Inventário Profissional</p>
+                            </div>
+                        </div>
+                        <div class="header-right">
+                            <button class="close-report-btn" onclick="closeReportModal()">&times;</button>
+                        </div>
+                    </div>
+                    <div id="report-pages-container" class="report-scroll-area"
+                        style="overflow-y: auto; flex: 1; padding: 1rem;">
+                        <!-- Páginas A4 dinâmicas injetadas por JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Edição de Item do Relatório -->
+            <div id="edit-report-item-modal" class="modal">
+                <div class="modal-content glass" style="max-width: 520px; border: 1px solid rgba(212,175,55,0.3);">
+                    <div class="report-header">
+                        <h2 class="gold-text"><i data-lucide="edit-3"></i> Editar Item</h2>
+                        <button class="modal-back-btn" onclick="closeEditReportItemModal()">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                    <form id="edit-report-item-form" class="mt-4" onsubmit="saveEditReportItem(event)">
+                        <input type="hidden" id="edit-ri-index">
+
+                        <div class="form-group">
+                            <label><i data-lucide="tag" class="field-icon icon-name"></i> Nome do Produto</label>
+                            <input type="text" id="edit-ri-name" required class="glass-input"
+                                placeholder="Nome do produto">
+                        </div>
+
+                        <div class="form-row mt-2" style="display:flex; gap:1rem;">
+                            <div class="form-group" style="flex:1">
+                                <label><i data-lucide="package" class="field-icon icon-stock"></i> Qtd.
+                                    Compra</label>
+                                <input type="number" id="edit-ri-qty" required class="glass-input" min="0"
+                                    placeholder="0">
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label><i data-lucide="shopping-bag" class="field-icon icon-cost"></i> Custo Unit.
+                                    (R$)</label>
+                                <input type="number" id="edit-ri-cost" required class="glass-input" step="0.01" min="0"
+                                    placeholder="0.00">
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-2">
+                            <label><i data-lucide="dollar-sign" class="field-icon icon-price"></i> Preço de Venda
+                                (R$)</label>
+                            <input type="number" id="edit-ri-price" required class="glass-input" step="0.01" min="0"
+                                placeholder="0.00">
+                        </div>
+
+                        <div class="form-group mt-3" id="edit-ri-margin-display"
+                            style="padding: 0.6rem 1rem; border-radius: 8px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2);">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size: 0.85rem; color: #94a3b8;">Margem de Lucro:</span>
+                                <span id="edit-ri-margin-value"
+                                    style="font-weight: 700; font-size: 1rem; color: #10b981;">0%</span>
+                            </div>
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                                <span style="font-size: 0.85rem; color: #94a3b8;">Subtotal (Qtd × Custo):</span>
+                                <span id="edit-ri-subtotal-value"
+                                    style="font-weight: 700; font-size: 1rem; color: #d4af37;">R$
+                                    0,00</span>
+                            </div>
+                        </div>
+
+                        <div class="form-actions mt-4" style="display: flex; gap: 1rem;">
+                            <button type="submit" class="submit-btn gold-gradient" style="flex:2">
+                                <i data-lucide="check"></i> Salvar Alterações
+                            </button>
+                            <button type="button" class="cancel-btn" onclick="closeEditReportItemModal()"
+                                style="flex:1">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="history-modal" class="modal">
+                <div class="modal-content glass" style="max-width: 800px;">
+                    <div class="report-header">
+                        <h2 class="gold-text"><i data-lucide="history"></i> Histórico de Pedidos</h2>
+                        <button class="modal-back-btn" onclick="closeHistoryModal()">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                    <div class="report-body">
+                        <div class="history-list-container">
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data/Hora</th>
+                                        <th>Total</th>
+                                        <th>Itens</th>
+                                        <th style="text-align:right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <!-- Injetado por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cliente Modal -->
+            <div id="customer-modal" class="modal">
+                <div class="modal-content glass" style="max-width: 500px;">
+                    <div class="report-header">
+                        <h2 class="gold-text"><i data-lucide="user-plus"></i> Novo Cliente</h2>
+                        <button class="modal-back-btn" onclick="closeCustomerModal()">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                    <form id="customer-form" class="mt-4">
+                        <div class="form-group">
+                            <label>Nome Completo</label>
+                            <input type="text" id="c-name" required class="glass-input">
+                        </div>
+                        <div class="form-group mt-2">
+                            <label>Endereço</label>
+                            <input type="text" id="c-address" class="glass-input">
+                        </div>
+                        <div class="form-row mt-2" style="display:flex; gap:1rem;">
+                            <div class="form-group" style="flex:1">
+                                <label>Telefone</label>
+                                <input type="text" id="c-phone" class="glass-input">
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label>Email</label>
+                                <input type="email" id="c-email" class="glass-input">
+                            </div>
+                        </div>
+                        <div class="form-actions mt-4" style="display: flex; gap: 1rem;">
+                            <button type="submit" class="submit-btn gold-gradient" style="flex:1">Salvar
+                                Cliente</button>
+                            <button type="button" class="cancel-btn" onclick="closeCustomerModal()"
+                                style="flex:1">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modals -->
+            <div id="user-modal" class="modal">
+                <div class="modal-content glass" style="max-width: 400px;">
+                    <div class="report-header">
+                        <h2 class="gold-text"><i data-lucide="user-cog"></i> Editar Usuário</h2>
+                        <button class="modal-back-btn" onclick="closeUserModal()">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                    <form id="user-form" class="mt-4">
+                        <input type="hidden" id="u-id">
+                        <input type="hidden" id="u-role">
+                        <div class="form-group">
+                            <label>Nome de Usuário</label>
+                            <input type="text" id="u-name" required class="glass-input">
+                        </div>
+                        <div class="form-group mt-2">
+                            <label>Senha de Acesso</label>
+                            <input type="password" id="u-password" required class="glass-input">
+                        </div>
+                        <div class="form-actions mt-4">
+                            <button type="submit" class="submit-btn gold-gradient w-full">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal de Filtros de Relatórios -->
+            <div id="report-filter-modal" class="modal">
+                <div class="modal-content glass" style="max-width: 500px;">
+                    <div class="report-header">
+                        <h2 class="gold-text"><i data-lucide="filter"></i> Filtros do Relatório</h2>
+                        <button class="modal-back-btn"
+                            onclick="document.getElementById('report-filter-modal').classList.remove('active')">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                    <form id="report-filter-form" class="mt-4"
+                        onsubmit="ReportManager.generateReportFromFilters(event)">
+                        <input type="hidden" id="filter-report-type">
+
+                        <div class="form-group" id="filter-client-group" style="display:none">
+                            <label>Cliente</label>
+                            <select id="filter-client-id" class="glass-input"></select>
+                        </div>
+
+                        <div class="form-group" id="filter-inventory-type-group" style="display:none">
+                            <label>Tipo de Item</label>
+                            <select id="filter-inventory-type" class="glass-input">
+                                <option value="all">Todos</option>
+                                <option value="produto">Produtos</option>
+                                <option value="insumo">Insumos</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="filter-category-group" style="display:none">
+                            <label>Categoria</label>
+                            <select id="filter-category" class="glass-input">
+                                <option value="all">Todas</option>
+                                <option value="Salgados">Salgados</option>
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Doces">Doces</option>
+                                <option value="Almoço / Jantar">Almoço / Jantar</option>
+                                <option value="Insumos">Insumos</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="filter-payment-group" style="display:none">
+                            <label>Método de Pagamento</label>
+                            <select id="filter-payment-method" class="glass-input">
+                                <option value="all">Todos</option>
+                                <option value="pix">PIX</option>
+                                <option value="cash">Dinheiro</option>
+                                <option value="credit">Cartão</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="filter-stock-group" style="display:none">
+                            <label>Status do Estoque</label>
+                            <select id="filter-stock-status" class="glass-input">
+                                <option value="all">Todos</option>
+                                <option value="low">Abaixo do Mínimo</option>
+                                <option value="ok">Estável</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row mt-4" style="display:flex; gap:1rem;">
+                            <div class="form-group" style="flex:1">
+                                <label>Data Início</label>
+                                <input type="date" id="filter-date-start" class="glass-input">
+                            </div>
+                            <div class="form-group" style="flex:1">
+                                <label>Data Fim</label>
+                                <input type="date" id="filter-date-end" class="glass-input">
+                            </div>
+                        </div>
+
+                        <div class="form-actions mt-4">
+                            <button type="submit" class="submit-btn gold-gradient" style="width:100%">
+                                Gerar Relatório
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Modal de Prévia de Relatório (Filtros) -->
+            <div id="report-preview-modal" class="modal">
+                <div class="modal-content report-preview-content">
+                    <div class="modal-header"
+                        style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2><i data-lucide="file-text"></i> Prévia do Relatório</h2>
+                        <div class="header-actions">
+                            <button class="action-btn"
+                                onclick="document.getElementById('report-preview-modal').classList.remove('active')"
+                                title="Fechar">
+                                <i data-lucide="x"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="report-preview-body" class="report-scroll-area">
+                        <!-- Conteúdo da prévia injetado aqui -->
+                    </div>
+                </div>
+            </div>
+
+
+
+    </div>
+    </div>
+    </main>
+    </div>
+
+    <!-- Scripts Globais -->
+    <script>window.UPDATE_DEBUG('📡 Conectando Bibliotecas Externas...');</script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Scripts Locais v9.2 (Button Fix Update) -->
+    <script>window.UPDATE_DEBUG('📂 Sincronizando Módulos (v9.2)...');</script>
+    <script>document.write('<scr' + 'ipt src="js/notifications.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+    <script>document.write('<scr' + 'ipt src="js/inventory.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+    <script>document.write('<scr' + 'ipt src="js/finance.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+    <script>document.write('<scr' + 'ipt src="js/customers.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+    <script>document.write('<scr' + 'ipt src="js/auth.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+    <script>document.write('<scr' + 'ipt src="js/app.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+    <script>document.write('<scr' + 'ipt src="js/sales.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+    <script>document.write('<scr' + 'ipt src="js/reports.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+    <script>document.write('<scr' + 'ipt src="js/nfe-scanner.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+    <script>document.write('<scr' + 'ipt src="js/payments.js?v=' + Date.now() + '"><\/scr' + 'ipt>');</script>
+    <script>
+        // DEFINIÇÃO GLOBAL: restoreAllButtons v9.2
+        window.restoreAllButtons = function () {
+            console.log('🔧 restoreAllButtons() executando...');
+            // Restaurar todos os botões interativos
+            document.querySelectorAll('.add-btn, .header-actions, .header-btns, #btn-new-product, #btn-compras, #btn-scanner, .folder-card, .nav-help-btn, .submit-btn, .generate-order-btn, .action-btn, button').forEach(function (el) {
+                el.style.pointerEvents = 'auto';
+                el.style.opacity = '';
+                el.style.visibility = 'visible';
+                if (el.disabled && !el.dataset.keepDisabled) el.disabled = false;
+            });
+            // Também garantir que folder-card onclick funcione
+            document.querySelectorAll('.folder-card').forEach(function (el) {
+                el.style.pointerEvents = 'auto';
+                el.style.cursor = 'pointer';
+            });
+            // Limpar inline pointer-events de modais ativos para não travar
+            document.querySelectorAll('.modal.active').forEach(function (m) {
+                m.style.pointerEvents = '';
+                m.style.display = '';
+            });
+            // Modais inativos: garantir que estão escondidos via CSS (não usar inline pointer-events!)
+            document.querySelectorAll('.modal:not(.active)').forEach(function (m) {
+                m.style.pointerEvents = '';
+                m.style.display = '';
+            });
+            console.log('✅ Restauração completa de botões concluída');
+        };
+        // Executar imediatamente
+        window.restoreAllButtons();
+    </script>
+
+    <script>
+        // --- BOOT FINAL RESILIENTE v9.1 ---
+        window.LAST_RESCUE_PULSE = 'Inicialização Final';
+        var finalBoot = function () {
+            var bootLog = [];
+
+            // Passo 1: Inventário
+            try {
+                if (window.InventoryStore) {
+                    window.InventoryStore.getAll();
+                    bootLog.push('Inventario: ' + window.InventoryStore.products.length + ' produtos');
+                } else {
+                    bootLog.push('Inventario: FALTA InventoryStore');
+                }
+            } catch (e) { bootLog.push('Inventario ERRO: ' + e.message); }
+
+            // Passo 2: renderProducts
+            try {
+                if (window.renderProducts) {
+                    window.renderProducts();
+                    bootLog.push('Render: OK');
+                } else {
+                    bootLog.push('Render: FALTA renderProducts');
+                    var list = document.getElementById('product-list');
+                    if (list && window.InventoryStore) {
+                        var prods = window.InventoryStore.getAll().filter(function (p) { return p.type === 'produto'; });
+                        list.innerHTML = prods.map(function (p) {
+                            return '<div class="product-card" style="animation-delay:0.05s"><div class="product-img"><img src="' + p.img + '" alt="' + p.name + '" onerror="this.src=\'https://via.placeholder.com/200x180?text=Produto\'"><div class="product-price-badge">R$ ' + (p.price || 0).toFixed(2) + '</div></div><div class="product-name-bottom">' + p.name + '</div></div>';
+                        }).join('');
+                        bootLog.push('Emergencia: ' + prods.length + ' produtos renderizados');
+                    }
+                }
+            } catch (e) { bootLog.push('Render ERRO: ' + e.message); }
+
+            // Passo 3: Outros módulos
+            try { if (window.CustomerStore && window.CustomerStore.init) window.CustomerStore.init(); } catch (e) { }
+            try { if (window.FinanceStore && window.FinanceStore.init) window.FinanceStore.init(); } catch (e) { }
+            try { if (window.SalesManager && window.SalesManager.init) window.SalesManager.init(); } catch (e) { }
+            try { if (window.ReportManager && window.ReportManager.init) window.ReportManager.init(); } catch (e) { }
+            try { if (window.lucide) lucide.createIcons(); } catch (e) { }
+
+            // Passo 4: Restaurar TODOS os botões (fix crítico para pointer-events)
+            try {
+                if (window.restoreAllButtons) {
+                    window.restoreAllButtons();
+                    bootLog.push('Botões: Restaurados via restoreAllButtons()');
+                } else {
+                    var btnCompras = document.getElementById('btn-compras');
+                    var btnScanner = document.getElementById('btn-scanner');
+                    var btnNovo = document.getElementById('btn-new-product');
+                    [btnCompras, btnScanner, btnNovo].forEach(function (btn) {
+                        if (btn) {
+                            btn.style.opacity = '1';
+                            btn.style.pointerEvents = 'auto';
+                            btn.style.visibility = 'visible';
+                            btn.disabled = false;
+                        }
+                    });
+                    bootLog.push('Botões: Restaurados manualmente');
+                }
+            } catch (e) { console.error('Boot passo 4 erro:', e); }
+
+            console.log('=== BOOT LOG ===\n' + bootLog.join('\n'));
+
+            // Remover banner
+            var banner = document.getElementById('boot-diagnostic-banner');
+            if (banner) banner.remove();
+        };
+
+        window.addEventListener('load', finalBoot);
+        // Backup: Forçar boot se o load demorar
+        setTimeout(function () {
+            var bannerCheck = document.getElementById('boot-diagnostic-banner');
+            if (bannerCheck) {
+                finalBoot();
+                bannerCheck.remove();
+            }
+        }, 7000);
+    </script>
+
+    <!-- ═══════ RELATÓRIOS A4 GENÉRICOS - INLINE GARANTIDO ═══════ -->
+    <script>
+        (function () {
+            console.log('📊 Carregando módulo de relatórios inline...');
+
+            // Função principal: renderiza dados tabulares no formato A4 profissional
+            function _renderA4(data, reportTitle) {
+                var modal = document.getElementById('report-preview-modal');
+                var body = document.getElementById('report-preview-body');
+                if (!modal || !body) {
+                    alert('Erro: Modal de relatório não encontrado. Recarregue.');
+                    return;
+                }
+
+                var now = new Date();
+                var dateStr = now.toLocaleDateString('pt-BR');
+                var timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                if (!data || data.length === 0) {
+                    body.innerHTML = '<div style="background:#fff;color:#000;padding:40px;text-align:center;border-radius:12px;margin:20px;">' +
+                        '<h2 style="margin-bottom:10px;">' + reportTitle + '</h2>' +
+                        '<p style="font-size:1.1rem;color:#64748b;">📋 Nenhum registro encontrado para este relatório.</p>' +
+                        '<button onclick="document.getElementById(\'report-preview-modal\').classList.remove(\'active\')" style="margin-top:20px;background:#64748b;color:#fff;border:none;padding:10px 24px;border-radius:6px;cursor:pointer;font-weight:700;">VOLTAR</button>' +
+                        '</div>';
+                    modal.classList.add('active');
+                    return;
+                }
+
+                var headers = [];
+                for (var k in data[0]) { if (k !== 'id') headers.push(k); }
+
+                var perPage = 22;
+                var totalPages = Math.ceil(data.length / perPage);
+                var html = '';
+
+                for (var pg = 0; pg < totalPages; pg++) {
+                    var startIdx = pg * perPage;
+                    var pageItems = data.slice(startIdx, startIdx + perPage);
+                    var isFirst = (pg === 0);
+                    var isLast = (pg === totalPages - 1);
+
+                    html += '<div style="width:210mm;min-height:280mm;background:#fff;color:#000;padding:12mm;margin:10px auto;box-shadow:0 4px 20px rgba(0,0,0,0.3);font-family:Arial,sans-serif;box-sizing:border-box;position:relative;page-break-after:' + (isLast ? 'avoid' : 'always') + ';">';
+
+                    if (isFirst) {
+                        // Título centralizado no topo
+                        html += '<div style="text-align:center;margin-bottom:4mm;">';
+                        html += '<div style="font-size:16pt;font-weight:900;color:#0f172a;letter-spacing:2px;text-transform:uppercase;">' + reportTitle + '</div>';
+                        html += '<div style="height:2px;background:linear-gradient(90deg,transparent,#0f172a,transparent);margin-top:2mm;"></div>';
+                        html += '</div>';
+
+                        // Logos + Botões
+                        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4mm;border-bottom:2px solid #000;padding-bottom:3mm;">';
+                        html += '<div style="display:flex;align-items:center;gap:10px;">';
+                        html += '<img src="assets/logo_3d.png" alt="Logo" style="height:50px;width:auto;" onerror="this.style.display=\'none\'">';
+                        html += '<div style="font-size:11pt;font-weight:800;line-height:1.2;">CANTINA<br>DOS AMIGOS</div>';
+                        html += '</div>';
+                        html += '<img src="https://www.provida.net/wp-content/uploads/2021/01/Logo_PVPT@2x.png" alt="Provida" style="height:50px;width:auto;" onerror="this.style.display=\'none\'">';
+                        html += '<div class="no-print" style="display:flex;gap:8px;">';
+                        html += '<button onclick="window.print()" style="background:#10b981;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:700;font-size:0.85rem;">IMPRIMIR</button>';
+                        html += '<button onclick="document.getElementById(\'report-preview-modal\').classList.remove(\'active\')" style="background:#64748b;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:700;font-size:0.85rem;">VOLTAR</button>';
+                        html += '</div>';
+                        html += '</div>';
+                        html += '<div style="text-align:right;font-size:9pt;color:#64748b;margin-bottom:3mm;">' + dateStr + ' - ' + timeStr + '</div>';
+                    } else {
+                        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2mm;border-bottom:1px solid #000;padding-bottom:1mm;">';
+                        html += '<div style="font-weight:800;font-size:8pt;text-transform:uppercase;">CANTINA DOS AMIGOS - ' + reportTitle + '</div>';
+                        html += '<span style="font-size:8pt;color:#64748b;">' + dateStr + '</span>';
+                        html += '</div>';
+                    }
+
+                    // Tabela
+                    html += '<table style="width:100%;border-collapse:collapse;font-size:9.5pt;">';
+                    html += '<thead><tr style="border-bottom:2px solid #000;background:#f1f5f9;">';
+                    html += '<th style="width:30px;padding:2mm;text-align:center;font-size:8pt;">#</th>';
+                    for (var h = 0; h < headers.length; h++) {
+                        html += '<th style="text-align:left;padding:2mm;font-size:8pt;">' + headers[h] + '</th>';
+                    }
+                    html += '</tr></thead><tbody>';
+
+                    for (var r = 0; r < pageItems.length; r++) {
+                        var rowNum = startIdx + r + 1;
+                        html += '<tr style="border-bottom:1px solid #e2e8f0;">';
+                        html += '<td style="font-weight:700;text-align:center;padding:1.5mm;font-size:8.5pt;">' + rowNum + '</td>';
+                        for (var c = 0; c < headers.length; c++) {
+                            var val = pageItems[r][headers[c]];
+                            html += '<td style="padding:1.5mm;font-size:8.5pt;">' + (val || '-') + '</td>';
+                        }
+                        html += '</tr>';
+                    }
+                    html += '</tbody></table>';
+
+                    if (isLast) {
+                        html += '<div style="text-align:right;margin-top:5mm;font-size:11pt;font-weight:800;border-top:2px solid #000;padding-top:2mm;">';
+                        html += 'TOTAL DE REGISTROS: ' + data.length;
+                        html += '</div>';
+                    }
+
+                    html += '<div style="position:absolute;bottom:5mm;right:10mm;font-size:8pt;color:#64748b;">Página ' + (pg + 1) + ' de ' + totalPages + '</div>';
+                    html += '</div>';
+                }
+
+                body.innerHTML = html;
+                modal.classList.add('active');
+            }
+
+            // ═══════ FUNÇÕES DE CADA RELATÓRIO ═══════
+
+            window.openSalesA4Report = function () {
+                var sales = [];
+                try {
+                    sales = window.FinanceStore.transactions.filter(function (t) {
+                        return t.type === 'in' && (t.category === 'Vendas' || t.category === 'Venda' || t.category === 'Consumo');
+                    });
+                } catch (e) { console.error('Erro ao buscar vendas:', e); }
+
+                var data = sales.map(function (s) {
+                    var items = (s.metadata && s.metadata.items) ? s.metadata.items : [];
+                    var itemsStr = items.map(function (it) { return it.qty + 'x ' + it.name; }).join(', ') || 'Venda Geral';
+                    return {
+                        "Data": new Date(s.date).toLocaleDateString('pt-BR'),
+                        "Descrição": s.desc || itemsStr,
+                        "Itens": itemsStr,
+                        "Valor": 'R$ ' + parseFloat(s.amount).toFixed(2),
+                        "Pagamento": (s.method || 'PIX').toUpperCase()
+                    };
+                });
+                _renderA4(data, 'RELATÓRIO DE VENDAS');
+            };
+
+            window.openDeletedA4Report = function () {
+                var deleted = [];
+                try {
+                    deleted = window.FinanceStore.deletedTransactions || [];
+                } catch (e) { console.error('Erro ao buscar cancelamentos:', e); }
+
+                var data = deleted.map(function (t) {
+                    var items = (t.metadata && t.metadata.items) ? t.metadata.items : [];
+                    var itemsStr = items.map(function (it) { return it.qty + 'x ' + it.name; }).join(', ') || t.desc || 'N/A';
+                    return {
+                        "Data Original": new Date(t.date).toLocaleDateString('pt-BR'),
+                        "Cancelado em": new Date(t.deletedAt).toLocaleString('pt-BR'),
+                        "Cliente": (t.metadata && t.metadata.customerName) || "Não informado",
+                        "Itens": itemsStr,
+                        "Valor": 'R$ ' + parseFloat(t.amount).toFixed(2),
+                        "Motivo": t.reason || "Não informado"
+                    };
+                });
+                _renderA4(data, 'AUDITORIA DE CANCELAMENTOS');
+            };
+
+            window.openCustomersA4Report = function () {
+                var customers = [];
+                try {
+                    customers = window.CustomerStore.getAll() || [];
+                } catch (e) { console.error('Erro ao buscar clientes:', e); }
+
+                var data = customers.map(function (c) {
+                    return {
+                        "Nome": c.name || '-',
+                        "Telefone": c.phone || '-',
+                        "Email": c.email || '-',
+                        "Endereço": c.address || '-'
+                    };
+                });
+                _renderA4(data, 'LISTA DE CLIENTES');
+            };
+
+            window.openBillingA4Report = function () {
+                var sales = [];
+                try {
+                    sales = window.FinanceStore.transactions.filter(function (t) {
+                        return t.type === 'in' && (t.category === 'Vendas' || t.category === 'Venda' || t.category === 'Consumo' || t.category === 'Almoço' || t.category === 'Jantar');
+                    });
+                } catch (e) { console.error('Erro ao buscar faturamento:', e); }
+
+                var data = sales.map(function (s) {
+                    var items = (s.metadata && s.metadata.items) ? s.metadata.items : [];
+                    var itemsStr = items.map(function (it) { return it.qty + 'x ' + it.name; }).join(', ') || 'Venda Geral';
+                    return {
+                        "Data": new Date(s.date).toLocaleDateString('pt-BR'),
+                        "Descrição": s.desc || '-',
+                        "Itens": itemsStr,
+                        "Valor": 'R$ ' + parseFloat(s.amount).toFixed(2),
+                        "Pagamento": (s.method || 'PIX').toUpperCase()
+                    };
+                });
+                _renderA4(data, 'FATURAMENTO DETALHADO');
+            };
+
+            window.openConsumptionA4Report = function () {
+                var sales = [];
+                try {
+                    sales = window.FinanceStore.transactions.filter(function (t) {
+                        if (t.type !== 'in') return false;
+                        var cat = (t.category || '').toLowerCase();
+                        return cat === 'vendas' || cat === 'venda' || cat === 'consumo';
+                    });
+                } catch (e) { console.error('Erro ao buscar consumo:', e); }
+
+                var data = sales.map(function (s) {
+                    var items = (s.metadata && s.metadata.items) ? s.metadata.items : [];
+                    var itemsStr = items.map(function (it) { return it.qty + 'x ' + it.name; }).join(', ') || 'Consumo';
+                    return {
+                        "Data": new Date(s.date).toLocaleDateString('pt-BR'),
+                        "Cliente": (s.metadata && s.metadata.customerName) || s.desc || '-',
+                        "Itens": itemsStr,
+                        "Valor": 'R$ ' + parseFloat(s.amount).toFixed(2),
+                        "Pagamento": (s.method || 'PIX').toUpperCase()
+                    };
+                });
+                _renderA4(data, 'CONSUMO POR CLIENTE');
+            };
+
+            console.log('✅ Relatórios inline carregados: openSalesA4Report, openDeletedA4Report, openCustomersA4Report, openBillingA4Report, openConsumptionA4Report');
+        })();
+    </script>
+
+    <!-- Fix nuclear removido - causa raiz corrigida (</div> faltante no help-tutorial-modal) -->
+</body>
+
+</html>

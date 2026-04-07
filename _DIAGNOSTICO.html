@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Diagnóstico Rápido</title>
+    <style>
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            padding: 20px;
+        }
+
+        .fail {
+            color: #f00;
+        }
+
+        .ok {
+            color: #0f0;
+        }
+
+        .warn {
+            color: #ff0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Diagnóstico do Sistema</h1>
+    <div id="log"></div>
+
+    <script src="js/inventory.js"></script>
+    <script src="js/finance.js"></script>
+    <script src="js/customers.js"></script>
+    <script src="js/sales.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        const log = document.getElementById('log');
+        function print(msg, type = 'ok') {
+            log.innerHTML += `<div class="${type}">${msg}</div>`;
+        }
+
+        window.onload = function () {
+            print("Iniciando testes...");
+
+            // Teste 1: Lojas
+            if (window.InventoryStore) print("InventoryStore: OK"); else print("InventoryStore: FALHA", 'fail');
+            if (window.SalesManager) print("SalesManager: OK"); else print("SalesManager: FALHA", 'fail');
+
+            // Teste 2: Funções Globais do app.js
+            if (typeof filterHomeProducts === 'function') print("filterHomeProducts: OK"); else print("filterHomeProducts: FALHA (Escopo incorreto?)", 'fail');
+            if (typeof openProductModal === 'function') print("openProductModal: OK"); else print("openProductModal: FALHA", 'fail');
+            if (typeof openA4ReportView === 'function') print("openA4ReportView: OK"); else print("openA4ReportView: FALHA", 'fail');
+
+            // Teste 3: Execução do app.js
+            if (window.openPayment) print("Exportação Final (window.openPayment): OK"); else print("Exportação Final: FALHA (Script parou antes do fim)", 'fail');
+
+            print("Diagnóstico concluído.");
+        }
+    </script>
+</body>
+
+</html>

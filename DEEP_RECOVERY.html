@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEEP RECOVERY - Cantina dos Amigos</title>
+    <style>
+        :root {
+            --gold: #d4af37;
+            --bg: #020617;
+            --dark-green: #022c22;
+            --text: #e2e8f0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(2, 44, 34, 0.4);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--gold);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.2);
+        }
+
+        h1 {
+            color: var(--gold);
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+        }
+
+        .diagnostic-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 1.5rem;
+            border: 1px solid #334155;
+        }
+
+        .key-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--gold);
+        }
+
+        .key-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .key-name {
+            color: var(--gold);
+            font-weight: bold;
+        }
+
+        .key-size {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        button {
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .btn-scan {
+            background: var(--gold);
+            color: #000;
+            width: 100%;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-restore {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-home {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            margin-top: 1rem;
+        }
+
+        .log-entry {
+            margin: 2px 0;
+            font-size: 0.9rem;
+        }
+
+        .log-success {
+            color: #4ade80;
+        }
+
+        .log-error {
+            color: #f87171;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>DEEP DATA RECOVERY</h1>
+        <p class="subtitle">Escaneamento Profundo de Memória Local para Recuperação de Itens</p>
+
+        <button class="btn-scan" onclick="deepScan()">INICIAR ESCANEAMENTO PROFUNDO</button>
+
+        <div id="diagnostic-log" class="diagnostic-box">
+            <div class="log-entry">Aguardando início do escaneamento...</div>
+        </div>
+
+        <div id="results-list">
+            <!-- Resultados aparecerão aqui -->
+        </div>
+
+        <button class="btn-home" onclick="window.location.href='index.html'" style="width: 100%;">VOLTAR AO
+            SISTEMA</button>
+    </div>
+
+    <script>
+        const LOG = document.getElementById('diagnostic-log');
+        const RESULTS = document.getElementById('results-list');
+
+        function addLog(msg, type = '') {
+            const div = document.createElement('div');
+            div.className = 'log-entry ' + (type ? 'log-' + type : '');
+            div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            LOG.appendChild(div);
+            LOG.scrollTop = LOG.scrollHeight;
+        }
+
+        function deepScan() {
+            addLog("Iniciando varredura de todas as chaves do LocalStorage...");
+            RESULTS.innerHTML = '';
+            let foundCount = 0;
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const data = localStorage.getItem(key);
+                addLog(`Analisando chave: ${key}...`);
+
+                // Tentar identificar se o conteúdo contém produtos
+                try {
+                    const parsed = JSON.parse(data);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        const firstItem = parsed[0];
+                        if (firstItem.name && (firstItem.price !== undefined || firstItem.cost !== undefined)) {
+                            addLog(`DADOS ENCONTRADOS na chave: ${key}!`, 'success');
+                            renderKeyResult(key, parsed);
+                            foundCount++;
+                        }
+                    }
+                } catch (e) { }
+            }
+
+            if (foundCount === 0) {
+                addLog("Nenhum dado órfão detectado. O sistema parece estar limpo.", 'error');
+            } else {
+                addLog(`Escaneamento concluído. ${foundCount} fonte(s) de dados localizadas.`);
+            }
+        }
+
+        function renderKeyResult(key, items) {
+            const div = document.createElement('div');
+            div.className = 'key-item';
+            div.innerHTML = `
+                <div class="key-info">
+                    <span class="key-name">${key}</span>
+                    <span class="key-size">${items.length} itens detectados</span>
+                </div>
+                <button class="btn-restore" onclick="restoreKey('${key}')">RESTAURAR PARA ESTOQUE</button>
+            `;
+            RESULTS.appendChild(div);
+        }
+
+        function restoreKey(key) {
+            if (!confirm(`Deseja restaurar os dados de "${key}" para o estoque principal?`)) return;
+
+            try {
+                const data = localStorage.getItem(key);
+                localStorage.setItem('cantina_products', data);
+                addLog(`SUCESSO: Dados de "${key}" restaurados para "cantina_products".`, 'success');
+                alert("Restauração concluída! Volte ao sistema e atualize a página.");
+            } catch (e) {
+                addLog(`ERRO ao restaurar: ${e.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+
+</html>

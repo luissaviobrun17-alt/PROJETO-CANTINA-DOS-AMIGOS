@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>DIAGNÓSTICO DO SISTEMA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #e0e0e0;
+            font-family: 'Consolas', monospace;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #d4af37;
+            margin-bottom: 20px;
+        }
+
+        .log {
+            margin: 5px 0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .ok {
+            background: rgba(16, 185, 129, 0.15);
+            border-left: 4px solid #10b981;
+        }
+
+        .err {
+            background: rgba(239, 68, 68, 0.15);
+            border-left: 4px solid #ef4444;
+            color: #fca5a5;
+        }
+
+        .warn {
+            background: rgba(245, 158, 11, 0.15);
+            border-left: 4px solid #f59e0b;
+            color: #fde68a;
+        }
+
+        .info {
+            background: rgba(59, 130, 246, 0.15);
+            border-left: 4px solid #3b82f6;
+        }
+
+        #results {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .action {
+            margin-top: 20px;
+        }
+
+        .action button {
+            background: #d4af37;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .action button:hover {
+            background: #facc15;
+        }
+
+        .copy-btn {
+            background: #3b82f6 !important;
+            color: white !important;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔍 DIAGNÓSTICO DO SISTEMA CANTINA v8.1</h1>
+    <div class="action">
+        <button onclick="runDiagnostic()">▶️ EXECUTAR DIAGNÓSTICO</button>
+        <button class="copy-btn" onclick="copyResults()">📋 COPIAR RESULTADOS</button>
+    </div>
+    <br>
+    <div id="results"></div>
+
+    <script>
+        const results = document.getElementById('results');
+        let allLogs = [];
+
+        function log(msg, type = 'info') {
+            const div = document.createElement('div');
+            div.className = 'log ' + type;
+            div.textContent = msg;
+            results.appendChild(div);
+            allLogs.push(`[${type.toUpperCase()}] ${msg}`);
+        }
+
+        function copyResults() {
+            const text = allLogs.join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Resultados copiados! Cole no chat.');
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+                alert('Resultados copiados! Cole no chat.');
+            });
+        }
+
+        async function runDiagnostic() {
+            results.innerHTML = '';
+            allLogs = [];
+            log('====== DIAGNÓSTICO INICIADO ======', 'info');
+            log('Data: ' + new Date().toLocaleString('pt-BR'), 'info');
+
+            // 1. Verificar se os scripts carregam sem erro
+            const scripts = [
+                'js/notifications.js',
+                'js/inventory.js',
+                'js/finance.js',
+                'js/customers.js',
+                'js/app.js',
+                'js/sales.js',
+                'js/reports.js',
+                'js/nfe-scanner.js',
+                'js/payments.js'
+            ];
+
+            log('--- TESTE 1: Verificando arquivos JS ---', 'info');
+            for (const src of scripts) {
+                try {
+                    const resp = await fetch(src);
+                    if (resp.ok) {
+                        const text = await resp.text();
+                        log(`✅ ${src} — ${text.length} bytes carregado`, 'ok');
+
+                        // Tentar avaliar sintaxe
+                        try {
+                            new Function(text);
+                            log(`   ✅ Sintaxe OK`, 'ok');
+                        } catch (syntaxErr) {
+                            log(`   ❌ ERRO DE SINTAXE: ${syntaxErr.message}`, 'err');
+                        }
+                    } else {
+                        log(`❌ ${src} — HTTP ${resp.status}`, 'err');
+                    }
+                } catch (e) {
+                    log(`❌ ${src} — Falha ao carregar: ${e.message}`, 'err');
+                }
+            }
+
+            // 2. Verificar Lucide
+            log('--- TESTE 2: Bibliotecas Externas ---', 'info');
+            try {
+                const lucideResp = await fetch('https://unpkg.com/lucide@latest');
+                log(`Lucide CDN: ${lucideResp.ok ? '✅ Acessível' : '❌ Inacessível'}`, lucideResp.ok ? 'ok' : 'err');
+            } catch (e) {
+                log(`❌ Lucide CDN inacessível: ${e.message}`, 'err');
+            }
+
+            // 3. Verificar CSS
+            log('--- TESTE 3: CSS ---', 'info');
+            try {
+                const cssResp = await fetch('css/style.css');
+                if (cssResp.ok) {
+                    const cssText = await cssResp.text();
+                    log(`✅ style.css — ${cssText.length} bytes`, 'ok');
+                } else {
+                    log(`❌ style.css — HTTP ${cssResp.status}`, 'err');
+                }
+            } catch (e) {
+                log(`❌ style.css — ${e.message}`, 'err');
+            }
+
+            // 4. Verificar elementos críticos
+            log('--- TESTE 4: Elementos DOM (carregados via iframe) ---', 'info');
+            log('⚠️ Para teste completo de DOM, abra cantina.html e veja o Console (F12).', 'warn');
+
+            log('====== DIAGNÓSTICO CONCLUÍDO ======', 'info');
+            log('Clique em "COPIAR RESULTADOS" e cole no chat para eu analisar.', 'warn');
+        }
+    </script>
+</body>
+
+</html>
