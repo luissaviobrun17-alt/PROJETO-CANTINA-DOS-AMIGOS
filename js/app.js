@@ -60,8 +60,12 @@ function updateModalFieldsByType(type) {
         if (categorySelect) {
             Array.from(categorySelect.options).forEach(opt => {
                 if (type === 'insumo') {
-                    opt.style.display = (opt.value === 'Insumos') ? 'block' : 'none';
-                    if (opt.value === 'Insumos') categorySelect.value = opt.value;
+                    // Mostrar Insumos (Cozinha) E Limpeza para tipo insumo
+                    const isAllowed = opt.value === 'Insumos' || opt.value === 'Limpeza';
+                    opt.style.display = isAllowed ? 'block' : 'none';
+                    if (isAllowed && categorySelect.value !== 'Insumos' && categorySelect.value !== 'Limpeza') {
+                        categorySelect.value = 'Insumos'; // padrão
+                    }
                 } else {
                     opt.style.display = 'block';
                 }
@@ -126,12 +130,11 @@ function renderProducts(filteredList = null) {
         let inventoryProducts = (filteredList || allProducts)
             .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
 
-        // Mostrar/ocultar barra de categorias e atualizar botões
+        // Mostrar/ocultar barras de categoria corretas
         const catBar = document.getElementById('inventory-category-bar');
-        if (catBar) {
-            const showCat = window.activeInventoryType === 'produto';
-            catBar.style.display = showCat ? 'block' : 'none';
-        }
+        const insumoBar = document.getElementById('inventory-insumo-bar');
+        if (catBar)    catBar.style.display    = (window.activeInventoryType === 'produto')  ? 'block' : 'none';
+        if (insumoBar) insumoBar.style.display = (window.activeInventoryType === 'insumo')   ? 'block' : 'none';
 
         // FIX: sempre filtrar por tipo quando tableBody existe
         if (!filteredList) {
@@ -141,17 +144,25 @@ function renderProducts(filteredList = null) {
                 if (filtered.length > 0) inventoryProducts = filtered;
             }
 
-            // Filtro por subcategoria (somente para produtos de venda)
-            if (window.activeInventoryType === 'produto' && window.activeInventoryCategory && window.activeInventoryCategory !== 'all') {
+            // Filtro por subcategoria
+            if (window.activeInventoryCategory && window.activeInventoryCategory !== 'all') {
                 const catFiltered = inventoryProducts.filter(p => {
                     const pCat = (p.category || '').toLowerCase();
-                    // 'Almoço' filtra tanto 'Almoço' quanto 'Jantar' e 'Almoço / Jantar'
                     if (window.activeInventoryCategory === 'Almoço') {
+                        // Para produtos: Almoço filtra Almoço e Jantar
                         return pCat.includes('almo') || pCat.includes('jantar');
+                    }
+                    if (window.activeInventoryCategory === 'Insumos') {
+                        // Para insumos: filtra categoria Insumos (cozinha)
+                        return pCat === 'insumos';
+                    }
+                    if (window.activeInventoryCategory === 'Limpeza') {
+                        // Para insumos: filtra categoria Limpeza
+                        return pCat === 'limpeza';
                     }
                     return pCat === window.activeInventoryCategory.toLowerCase();
                 });
-                inventoryProducts = catFiltered; // mostra mesmo se vazio (lista em branco)
+                inventoryProducts = catFiltered;
             }
 
             // Filtro por busca de texto
@@ -1811,8 +1822,10 @@ document.querySelectorAll('.nav-links li').forEach(li => {
             window.activeInventorySearch = '';
             const searchInput = document.getElementById('inventory-search');
             if (searchInput) searchInput.value = '';
-            document.querySelectorAll('#inventory-category-bar .category-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.invcat === 'all');
+            // Resetar ambas as barras de categoria
+            document.querySelectorAll('#inventory-category-bar .category-btn, #inventory-insumo-bar .category-btn').forEach(btn => {
+                const key = btn.dataset.invcat || btn.dataset.inscat;
+                btn.classList.toggle('active', key === 'all');
             });
             // FIX: garantir referência global consistente
 

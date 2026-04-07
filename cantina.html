@@ -636,6 +636,23 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Botões de subcategoria — visíveis somente em Insumos de Cozinha -->
+                    <div id="inventory-insumo-bar" style="display: none;">
+                        <div class="category-buttons-grid">
+                            <button class="category-btn active" data-inscat="all" onclick="filterInventoryByCategory('all')">
+                                <span>Todos</span>
+                            </button>
+                            <button class="category-btn" data-inscat="Insumos" onclick="filterInventoryByCategory('Insumos')">
+                                <i data-lucide="utensils"></i>
+                                <span>Insumos Cozinha</span>
+                            </button>
+                            <button class="category-btn" data-inscat="Limpeza" onclick="filterInventoryByCategory('Limpeza')">
+                                <i data-lucide="sparkles"></i>
+                                <span>Produtos de Limpeza</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="inventory-table-container glass">
@@ -1269,6 +1286,7 @@
                                             <option value="Almoço">Almoço</option>
                                             <option value="Jantar">Jantar</option>
                                             <option value="Insumos">Insumos (Cozinha)</option>
+                                            <option value="Limpeza">Produtos de Limpeza</option>
                                         </select>
                                     </div>
                                 </div>
