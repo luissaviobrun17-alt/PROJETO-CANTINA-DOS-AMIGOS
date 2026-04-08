@@ -542,7 +542,7 @@
                             </button>
                         </div>
                         <div class="sales-scroll-area">
-                            <div id="sales-product-grid" class="sales-list-view" style="margin-top: 1rem;">
+                            <div id="sales-product-grid" class="sales-list-view">
                                 <!-- Produtos filtrados por categoria aparecerão aqui -->
                             </div>
                         </div>
@@ -604,54 +604,34 @@
             </section>
 
             <section id="inventory" class="view-section">
-                <div class="header-actions" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
-                    <!-- Título à esquerda -->
-                    <h3 id="inventory-view-title" class="section-title" style="margin: 0; white-space: nowrap; flex-shrink: 0;">
-                        Gestão de Estoque
-                    </h3>
-                    <!-- Botões à direita — flex-wrap para não sair da tela -->
-                    <div class="header-btns" style="align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                        <button class="add-btn" id="btn-compras" title="Gerar Planilha de Compras (Interativa)"
-                            type="button"
+                <!-- HEADER COMPACTO: título + busca + botões numa única linha -->
+                <div class="inventory-top-bar">
+                    <h3 id="inventory-view-title" class="section-title" style="margin: 0; white-space: nowrap; flex-shrink: 0;">Gestão de Estoque</h3>
+
+                    <!-- 3 Botões de Ação à direita -->
+                    <div style="display:flex; align-items:center; gap:0.5rem; flex-shrink:0; margin-left:auto;">
+                        <!-- status e contador ocultos mas preservados para JS -->
+                        <span id="inventory-item-count" style="display:none;"></span>
+                        <span id="inventory-save-status" style="display:none;"></span>
+                        <button class="add-btn inv-action-btn" id="btn-compras" title="Gerar Planilha de Compras" type="button"
                             onclick="try{ if(window.openA4ReportView) window.openA4ReportView(window.activeInventoryType||'all',false); else if(window.ReportManager&&window.ReportManager.generateStockReport) window.ReportManager.generateStockReport(window.activeInventoryType||'all'); else alert('Relatórios indisponíveis. Recarregue.'); }catch(e){alert('Erro: '+e.message)}">
-                            <i data-lucide="shopping-cart"></i> Compras
+                            <i data-lucide="shopping-cart"></i> <span class="btn-label">Compras</span>
                         </button>
-                        <button class="add-btn" id="btn-scanner" title="Escanear Nota Fiscal (NF-e)" type="button"
+                        <button class="add-btn inv-action-btn" id="btn-scanner" title="Escanear Nota Fiscal (NF-e)" type="button"
                             onclick="try{ if(window.NFEScanner){if(!document.getElementById('nfe-scan-modal'))window.NFEScanner.init();window.NFEScanner.open(window.importScannedItems||function(){});}else alert('Scanner não carregou.'); }catch(e){alert('Erro: '+e.message)}">
-                            <i data-lucide="scan"></i> Escanear NF-e
+                            <i data-lucide="scan"></i> <span class="btn-label">NF-e</span>
                         </button>
-                        <button class="add-btn" id="btn-new-product" type="button"
+                        <button class="add-btn inv-action-btn inv-action-btn--primary" id="btn-new-product" type="button"
                             onclick="try{ if(window.openProductModal) window.openProductModal(); else { var m=document.getElementById('product-modal'); if(m){m.classList.add('active');} else alert('Modal não encontrado.');} }catch(e){alert('Erro: '+e.message)}">
-                            <i data-lucide="plus"></i> Novo Produto
+                            <i data-lucide="plus"></i> <span class="btn-label">Novo Produto</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Indicador de Status de Salvamento -->
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem;">
-                    <span id="inventory-save-status"
-                          style="font-size: 0.75rem; color: #64748b; font-style: italic; transition: color 0.5s;">
-                        Carregando dados...
-                    </span>
-                    <button onclick="window.InventoryStore._emergencyExport()"
-                            style="font-size: 0.7rem; background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.3); color: var(--gold); border-radius: 6px; padding: 3px 10px; cursor: pointer;"
-                            title="Exportar cópia de segurança agora">
-                        ⬇️ Backup Manual
-                    </button>
-                </div>
+                <!-- Filtros de Categoria (sem a barra de busca separada) -->
+                <div id="inventory-filter-bar" style="margin: 0.25rem 0 0.4rem 0; display: flex; flex-direction: column; gap: 0.3rem;">
 
-                <!-- Barra de Busca + Filtros de Categoria -->
-                <div id="inventory-filter-bar" style="margin: 0.5rem 0 0.75rem 0; display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div class="sales-search-box" style="flex: 1; max-width: 380px;">
-                            <i data-lucide="search" style="cursor:pointer;"></i>
-                            <input type="text" id="inventory-search" placeholder="Buscar produto no estoque..."
-                                   oninput="filterInventoryBySearch(this.value)">
-                        </div>
-                        <span id="inventory-item-count" style="font-size: 0.78rem; color: #64748b; white-space: nowrap;"></span>
-                    </div>
-
-                    <!-- Botões de categoria — visíveis somente em Produtos de Vendas -->
+                    <!-- Botões de categoria + BUSCA — visíveis somente em Produtos de Vendas -->
                     <div id="inventory-category-bar" style="display: none;">
                         <div class="category-buttons-grid">
                             <button class="category-btn active" data-invcat="all" onclick="filterInventoryByCategory('all')">
@@ -673,10 +653,16 @@
                                 <i data-lucide="utensils"></i>
                                 <span>Almoço / Jantar</span>
                             </button>
+                            <!-- Busca integrada, ocupa o espaço restante -->
+                            <div class="sales-search-box inv-inline-search">
+                                <i data-lucide="search" style="cursor:pointer; flex-shrink:0;"></i>
+                                <input type="text" id="inventory-search" placeholder="Buscar produto..."
+                                       oninput="filterInventoryBySearch(this.value)">
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Botões de subcategoria — visíveis somente em Insumos de Cozinha -->
+                    <!-- Botões de subcategoria + BUSCA — visíveis somente em Insumos de Cozinha -->
                     <div id="inventory-insumo-bar" style="display: none;">
                         <div class="category-buttons-grid">
                             <button class="category-btn active" data-inscat="all" onclick="filterInventoryByCategory('all')">
@@ -690,6 +676,12 @@
                                 <i data-lucide="sparkles"></i>
                                 <span>Produtos de Limpeza</span>
                             </button>
+                            <!-- Busca integrada, ocupa o espaço restante -->
+                            <div class="sales-search-box inv-inline-search">
+                                <i data-lucide="search" style="cursor:pointer; flex-shrink:0;"></i>
+                                <input type="text" id="inventory-search-insumo" placeholder="Buscar insumo..."
+                                       oninput="filterInventoryBySearch(this.value)">
+                            </div>
                         </div>
                     </div>
                 </div>
